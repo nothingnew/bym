@@ -1,9 +1,8 @@
-Breake Your Mind
+Break Your Mind
 
 Set of mind games :)
 
 Authors:
-Tomasz Fiołka
-Marcin Wojaczek
+Tomasz Fiołka & Marcin Wojaczek
 
-Copywright 2014
+Copyright (c) 2014
