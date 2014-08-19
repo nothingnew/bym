@@ -6,4 +6,4 @@ Authors:
 Tomasz Fiołka
 Marcin Wojaczek
 
-Copywright 2014
+Copyright (c) 2014
