@@ -1,4 +1,9 @@
-bym
-===
+Breake Your Mind
 
-breake your mind
+Set of mind games :)
+
+Authors:
+Tomasz Fiołka
+Marcin Wojaczek
+
+Copywright 2014
