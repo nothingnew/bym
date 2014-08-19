@@ -1,4 +1,4 @@
-Breake Your Mind
+Break Your Mind
 
 Set of mind games :)
 
