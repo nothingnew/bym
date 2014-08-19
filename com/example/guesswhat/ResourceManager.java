@@ -72,7 +72,7 @@ public class ResourceManager {
 	// ---------------------
 	
 	public synchronized void loadGameTextures(Engine pEngine, Context pContext){
-		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
+		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/guesswhat/");
 		
 		// Bitmap texture atlases
 		BuildableBitmapTextureAtlas mBitmapTextureAtlas1 = new BuildableBitmapTextureAtlas(
@@ -118,7 +118,7 @@ public class ResourceManager {
 	// ---------------------
 	
 	public synchronized void loadSounds(Engine pEngine, Context pContext){
-		SoundFactory.setAssetBasePath("sfx/");
+		SoundFactory.setAssetBasePath("sfx/guesswhat/");
 		 try {
 			 // Create sound object via SoundFactory class
 			 buttonClick = SoundFactory.createSoundFromAsset(pEngine.getSoundManager(), pContext, "button_click.mp3");
@@ -184,7 +184,7 @@ public class ResourceManager {
 
 			XMLParser handler = new XMLParser();
 
-			InputStream inputStream = pContext.getAssets().open("xml/questions.xml");
+			InputStream inputStream = pContext.getAssets().open("xml/guesswhat/questions.xml");
 			Reader reader = new InputStreamReader(inputStream, "UTF-8");
 
 			InputSource is = new InputSource(reader);

@@ -99,12 +99,9 @@ public class MainActivity extends BaseGameActivity {
 
 		// Load sounds
 //		SoundFactory.setAssetBasePath("sfx/menu/");
-//
 //		try {
 //			// Create mSound object via SoundFactory class
-//			mSound = SoundFactory.createSoundFromAsset(
-//					mEngine.getSoundManager(), this,
-//					"Stauros - Jaki tu spokoj.mp3");
+//			mSound = SoundFactory.createSoundFromAsset(mEngine.getSoundManager(), this, "linkin_park.mp3");
 //
 //		} catch (final IOException e) {
 //			Log.v("Sounds Load", "Exception:" + e.getMessage());
