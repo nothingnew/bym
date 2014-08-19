@@ -1,9 +1,9 @@
 package com.example.menu;
 
-import java.io.IOException;
-
-import org.andengine.audio.sound.Sound;
-import org.andengine.audio.sound.SoundFactory;
+//import java.io.IOException;
+//
+//import org.andengine.audio.sound.Sound;
+//import org.andengine.audio.sound.SoundFactory;
 import org.andengine.engine.FixedStepEngine;
 import org.andengine.engine.camera.Camera;
 import org.andengine.engine.options.EngineOptions;
@@ -32,7 +32,7 @@ import org.andengine.util.debug.Debug;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
-import android.util.Log;
+//import android.util.Log;
 
 public class MainActivity extends BaseGameActivity {
 
@@ -41,7 +41,7 @@ public class MainActivity extends BaseGameActivity {
 
 	private Scene mScene;
 	private Camera mCamera;
-	private Sound mSound;
+	//private Sound mSound;
 	private Font mFont;
 	private ITextureRegion mTextureRegionBackground;
 	private String mMenuString;
@@ -98,17 +98,17 @@ public class MainActivity extends BaseGameActivity {
 		mMenuString = "Break Your Mind\n\nImage Quiz\nGuess What\n";
 
 		// Load sounds
-		SoundFactory.setAssetBasePath("sfx/menu/");
-
-		try {
-			// Create mSound object via SoundFactory class
-			mSound = SoundFactory.createSoundFromAsset(
-					mEngine.getSoundManager(), this,
-					"Stauros - Jaki tu spokoj.mp3");
-
-		} catch (final IOException e) {
-			Log.v("Sounds Load", "Exception:" + e.getMessage());
-		}
+//		SoundFactory.setAssetBasePath("sfx/menu/");
+//
+//		try {
+//			// Create mSound object via SoundFactory class
+//			mSound = SoundFactory.createSoundFromAsset(
+//					mEngine.getSoundManager(), this,
+//					"Stauros - Jaki tu spokoj.mp3");
+//
+//		} catch (final IOException e) {
+//			Log.v("Sounds Load", "Exception:" + e.getMessage());
+//		}
 
 		pOnCreateResourcesCallback.onCreateResourcesFinished();
 	}
@@ -146,7 +146,7 @@ public class MainActivity extends BaseGameActivity {
 					// mSound.stop();
 					if (pSceneTouchEvent.getX() > WIDTH / 2) // right
 						startActivity(new Intent(pContext,
-								com.example.imagequiz.MainActivity.class));
+								com.example.findwords.MainActivity.class));
 					else // left
 						startActivity(new Intent(pContext,
 								com.example.guesswhat.MainActivity.class));
