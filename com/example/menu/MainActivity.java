@@ -129,11 +129,12 @@ public class MainActivity extends BaseGameActivity {
 
 		final Context pContext = this;
 
-		mSound.play();
+		// nie dziala, leci error
+		// mSound.play();
 
 		Sprite menuSprite = new Sprite(WIDTH / 2, HEIGHT / 2,
 				mTextureRegionBackground, getVertexBufferObjectManager()) {
-			
+
 			@Override
 			public boolean onAreaTouched(final TouchEvent pSceneTouchEvent,
 					final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
@@ -142,11 +143,13 @@ public class MainActivity extends BaseGameActivity {
 
 				switch (eventAction) {
 				case TouchEvent.ACTION_UP: {
-					//mScene.unregisterTouchArea(this);
-					mSound.stop();
-					//mScene.detachChild(this);
-					startActivity(new Intent(pContext,
-							com.example.imagequiz.MainActivity.class));
+					// mSound.stop();
+					if (pSceneTouchEvent.getX() > WIDTH / 2) // right
+						startActivity(new Intent(pContext,
+								com.example.imagequiz.MainActivity.class));
+					else // left
+						startActivity(new Intent(pContext,
+								com.example.guesswhat.MainActivity.class));
 					break;
 				}
 				default:
@@ -160,13 +163,13 @@ public class MainActivity extends BaseGameActivity {
 		Text menuText = new Text(menuSprite.getWidth() / 2,
 				menuSprite.getHeight() / 2, mFont, mMenuString, 100,
 				getVertexBufferObjectManager());
-		
+
 		menuText.setHorizontalAlign(HorizontalAlign.CENTER);
 
 		menuSprite.attachChild(menuText);
-		
+
 		pScene.attachChild(menuSprite);
-		
+
 		pScene.registerTouchArea(menuSprite);
 
 		pScene.setTouchAreaBindingOnActionDownEnabled(true);
