@@ -74,9 +74,9 @@ public class ResourceManager {
 	 * the next scenes textures.
 	 */
 	public synchronized void loadGameTextures(Engine pEngine, Context pContext) {
-		// Set our game assets folder in "assets/gfx/game/"
+
 		BitmapTextureAtlasTextureRegionFactory
-				.setAssetBasePath("gfx/background/");
+				.setAssetBasePath("gfx/imagequiz/background/");
 
 		BuildableBitmapTextureAtlas mBitmapTextureAtlas1 = new BuildableBitmapTextureAtlas(
 				pEngine.getTextureManager(), 1030, 400);
@@ -131,7 +131,7 @@ public class ResourceManager {
 	 */
 	public synchronized void loadSounds(Engine pEngine, Context pContext) {
 		// Set the SoundFactory's base path
-		SoundFactory.setAssetBasePath("sounds/");
+		SoundFactory.setAssetBasePath("sfx/imagequiz/");
 		mSound = new Sound[3];
 		try {
 			// Create mSound object via SoundFactory class
@@ -209,7 +209,7 @@ public class ResourceManager {
 			XMLParser handler = new XMLParser();
 
 			InputStream inputStream = pContext.getAssets().open(
-					"xml/questions.xml");
+					"xml/imagequiz/questions.xml");
 			Reader reader = new InputStreamReader(inputStream, "UTF-8");
 
 			InputSource is = new InputSource(reader);
@@ -246,7 +246,7 @@ public class ResourceManager {
 	public synchronized void loadQuestionTextures(String[] files,
 			Engine pEngine, Context pContext) {
 
-		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/game/");
+		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/imagequiz/game/");
 
 		BuildableBitmapTextureAtlas mBitmapTextureAtlas = new BuildableBitmapTextureAtlas(
 				pEngine.getTextureManager(), 1024, 768);
