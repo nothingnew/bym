@@ -28,9 +28,11 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	private Camera mCamera;
 
 	private LetterButtonSprite mSpriteLetters[][];
-	private List<LetterButtonSprite> currentSpriteList;
-	private String currentText;
-	private boolean ignoreMove;
+	private List<LetterButtonSprite> mCurrentSpriteList;
+	private List<LetterButtonSprite> mAvailableSpriteList;
+	private List<String> mCurrentWordsList;
+	private String mCurrentText;
+	private boolean mIgnoreMove;
 
 	@Override
 	public EngineOptions onCreateEngineOptions() {
@@ -56,14 +58,21 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 		// Load fonts.
 		ResourceManager.getInstance().loadFonts(mEngine);
 
-		// Load text
-		ResourceManager.getInstance().loadText();
+		// Load words
+		ResourceManager.getInstance().loadWords(this);
+		mCurrentWordsList = ResourceManager.getInstance().getNewWords();
 
 		// Load sounds
 		ResourceManager.getInstance().loadSounds(mEngine, this);
 
 		// Load images
 		ResourceManager.getInstance().loadGameTextures(mEngine, this);
+		
+		// Init variables
+		mCurrentSpriteList = new ArrayList<LetterButtonSprite>();
+		mAvailableSpriteList = new ArrayList<LetterButtonSprite>();
+		mCurrentText = new String();
+		mIgnoreMove = false;
 
 		pOnCreateResourcesCallback.onCreateResourcesFinished();
 	}
@@ -99,10 +108,6 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 				pScene.attachChild(mSpriteLetters[i][j]);
 			}
 		}
-
-		currentSpriteList = new ArrayList<LetterButtonSprite>();
-		currentText = new String();
-		ignoreMove = false;
 		
 		pScene.setOnSceneTouchListener(this);
 
@@ -114,16 +119,16 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	{
 		// zmienic wszystko na switch!
 		
-		if (pSceneTouchEvent.isActionMove() && ignoreMove)
+		if (pSceneTouchEvent.isActionMove() && mIgnoreMove)
 		{
 			System.out.println("move locked");
 			return true;
 		}
 		
-		if (ignoreMove && pSceneTouchEvent.isActionDown())
+		if (mIgnoreMove && pSceneTouchEvent.isActionDown())
 		{
 			System.out.println("move unlocked");
-			ignoreMove = false;
+			mIgnoreMove = false;
 		}
 		
 	    if (pSceneTouchEvent.isActionMove() || pSceneTouchEvent.isActionDown())
@@ -142,30 +147,30 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	
 	public void onLetterButtonClick(int i, int j) {
 		
-		if(currentSpriteList.isEmpty())
+		if(mCurrentSpriteList.isEmpty())
 		{
 			mSpriteLetters[i][j].setCurrentTileIndex(1);
-			currentSpriteList.add(mSpriteLetters[i][j]);
-			currentText += mSpriteLetters[i][j].getLetter();
+			mCurrentSpriteList.add(mSpriteLetters[i][j]);
+			mCurrentText += mSpriteLetters[i][j].getLetter();
 			return;
 		}
 			
-		if (mSpriteLetters[i][j].getX() != currentSpriteList.get(0).getX() &&
-				mSpriteLetters[i][j].getY() != currentSpriteList.get(0).getY())
+		if (mSpriteLetters[i][j].getX() != mCurrentSpriteList.get(0).getX() &&
+				mSpriteLetters[i][j].getY() != mCurrentSpriteList.get(0).getY())
 		{
-			for(LetterButtonSprite sprite : currentSpriteList)
+			for(LetterButtonSprite sprite : mCurrentSpriteList)
 				sprite.resetBackground();
 			
-			currentSpriteList.clear();
-			currentText = "";
+			mCurrentSpriteList.clear();
+			mCurrentText = "";
 			
-			ignoreMove = true;
+			mIgnoreMove = true;
 			
 			return;
 		}
 		
-		currentSpriteList.add(mSpriteLetters[i][j]);
-		currentText += mSpriteLetters[i][j].getLetter();
+		mCurrentSpriteList.add(mSpriteLetters[i][j]);
+		mCurrentText += mSpriteLetters[i][j].getLetter();
 		
 		// sprawdzic czy currentText to poprawna odpowiedz
 		if (!checkCorrectness())
@@ -174,18 +179,19 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	
 	public boolean checkCorrectness() {
 		
-		if(currentText.length() > 5)
+		//if(mCurrentText.length() > 5)
+		if (mCurrentWordsList.contains(mCurrentText)) // zadziala? nie porownuje tekstow tylko obiekty?
 		{
-			ignoreMove = true;
-			currentText = "";
-			for(LetterButtonSprite sprite : currentSpriteList)
+			mIgnoreMove = true;
+			mCurrentText = "";
+			for(LetterButtonSprite sprite : mCurrentSpriteList)
 			{
 				if(sprite.isLocked())
 					sprite.resetBackground();
 				else
 					sprite.lockIn();
 			}
-			currentSpriteList.clear();
+			mCurrentSpriteList.clear();
 			return true;
 		}
 		else
