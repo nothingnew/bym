@@ -89,13 +89,13 @@ public class MainActivity extends BaseGameActivity {
 		// Load fonts.
 		mFont = FontFactory.create(mEngine.getFontManager(),
 				mEngine.getTextureManager(), 256, 256,
-				Typeface.create(Typeface.DEFAULT, Typeface.NORMAL), 32f, true,
+				Typeface.create(Typeface.DEFAULT, Typeface.NORMAL), 50f, true,
 				Color.BLACK_ARGB_PACKED_INT);
 
 		mFont.load();
 
 		// Load texts
-		mMenuString = "Break Your Mind\n\nImage Quiz\nGuess What\n";
+		mMenuString = "Break Your Mind\n\nGuess What          Image Quiz";
 
 		// Load sounds
 //		SoundFactory.setAssetBasePath("sfx/menu/");
@@ -143,7 +143,7 @@ public class MainActivity extends BaseGameActivity {
 					// mSound.stop();
 					if (pSceneTouchEvent.getX() > WIDTH / 2) // right
 						startActivity(new Intent(pContext,
-								com.example.findwords.MainActivity.class));
+								com.example.imagequiz.MainActivity.class));
 					else // left
 						startActivity(new Intent(pContext,
 								com.example.guesswhat.MainActivity.class));

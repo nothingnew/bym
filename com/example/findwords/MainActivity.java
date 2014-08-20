@@ -1,5 +1,8 @@
 package com.example.findwords;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.andengine.engine.FixedStepEngine;
 import org.andengine.engine.camera.Camera;
 import org.andengine.engine.options.EngineOptions;
@@ -8,25 +11,26 @@ import org.andengine.engine.options.WakeLockOptions;
 import org.andengine.engine.options.resolutionpolicy.FillResolutionPolicy;
 import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.Scene;
-import org.andengine.entity.sprite.AnimatedSprite;
-import org.andengine.entity.text.Text;
+import org.andengine.entity.util.FPSLogger;
 import org.andengine.input.touch.TouchEvent;
 import org.andengine.ui.activity.BaseGameActivity;
-
-import android.view.MotionEvent;
 
 public class MainActivity extends BaseGameActivity implements IOnSceneTouchListener {
 
 	private static final int WIDTH = 1024; // 800
 	private static final int HEIGHT = 768; // 480
+	private static final int BUTTON_WIDTH = 93;
+	private static final int BUTTON_HEIGHT = 96;
 	private static final int ROWS = 8;
 	private static final int COLUMNS = 11;
 
 	private Scene mScene;
 	private Camera mCamera;
 
-	private AnimatedSprite mSpriteLetters[][];
-	private Text mTextLetters[][];
+	private LetterButtonSprite mSpriteLetters[][];
+	private List<LetterButtonSprite> currentSpriteList;
+	private String currentText;
+	private boolean ignoreMove;
 
 	@Override
 	public EngineOptions onCreateEngineOptions() {
@@ -67,6 +71,8 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	@Override
 	public void onCreateScene(OnCreateSceneCallback pOnCreateSceneCallback) {
 
+		mEngine.registerUpdateHandler(new FPSLogger());
+		
 		mScene = new Scene();
 
 		pOnCreateSceneCallback.onCreateSceneFinished(mScene);
@@ -76,85 +82,28 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	public void onPopulateScene(Scene pScene,
 			OnPopulateSceneCallback pOnPopulateSceneCallback) {
 
-		mSpriteLetters = new AnimatedSprite[ROWS][COLUMNS];
-		mTextLetters = new Text[ROWS][COLUMNS];
+		mSpriteLetters = new LetterButtonSprite[COLUMNS][ROWS];
 
-		for (int i = 0; i < ROWS; ++i) {
-			for (int j = 0; j < COLUMNS; ++j) {
+		for (int i = 0; i < COLUMNS; ++i) {
+			for (int j = 0; j < ROWS; ++j) {
 
-				mSpriteLetters[i][j] = new AnimatedSprite(
-						93 / 2 + j * 93, 96 / 2 + (8 - i - 1) * 96,
+				mSpriteLetters[i][j] = new LetterButtonSprite(
+						BUTTON_WIDTH / 2 + i * BUTTON_WIDTH,
+						BUTTON_HEIGHT / 2 + j * BUTTON_HEIGHT,
 						ResourceManager.getInstance().mGameTextureRegionBackground2,
-						getVertexBufferObjectManager()) {
-
-					@Override
-					public boolean onAreaTouched(
-							final TouchEvent pSceneTouchEvent,
-							final float pTouchAreaLocalX,
-							final float pTouchAreaLocalY) {
-
-						int eventAction = pSceneTouchEvent.getMotionEvent().getAction();
-						switch (eventAction) {
-						case MotionEvent.ACTION_DOWN: {
-							ResourceManager.getInstance().mSound.play();
-							setCurrentTileIndex((getCurrentTileIndex() + 1)
-									% getTileCount());
-							break;
-						}
-						case MotionEvent.ACTION_UP: {
-							ResourceManager.getInstance().mSound.play();
-							setCurrentTileIndex((getCurrentTileIndex() + 1)
-									% getTileCount());
-							break;
-						}
-						default:
-							return true;
-						}
-
-						// if (pSceneTouchEvent.isActionDown())
-						// {
-						// ResourceManager.getInstance().mSound.play();
-						// setCurrentTileIndex((getCurrentTileIndex() + 1) %
-						// getTileCount());
-						// }
-
-						return true;
-					}
-
-				};
-
-				mTextLetters[i][j] = new Text(93 / 2, 96 / 2,
 						ResourceManager.getInstance().mFont,
 						ResourceManager.getInstance().mLettersString
-								.subSequence(i * COLUMNS + j, i * COLUMNS + j
-										+ 1),
-						mEngine.getVertexBufferObjectManager());
+						.subSequence(j * COLUMNS + i, j * COLUMNS + i + 1),
+						getVertexBufferObjectManager());
 
-				mSpriteLetters[i][j].attachChild(mTextLetters[i][j]);
-				//pScene.registerTouchArea(mSpriteLetters[i][j]);
 				pScene.attachChild(mSpriteLetters[i][j]);
 			}
 		}
 
-		// Mark some letters (words)
-		// word in 4th row (GRUDZIEÑ)
-		for (int j = 3; j < COLUMNS; ++j) {
-			mSpriteLetters[3][j].setCurrentTileIndex(2);
-		}
-		// word in 6th row (LUTY)
-		for (int j = 3; j < 7; ++j) {
-			mSpriteLetters[5][j].setCurrentTileIndex(2);
-		}
-		// word in 2nd column (MARZEC)
-		for (int i = 1; i < 7; ++i) {
-			mSpriteLetters[i][1].setCurrentTileIndex(2);
-		}
-		// word in 10th column (not all letters of this word)
-		for (int i = 0; i < 6; ++i) {
-			mSpriteLetters[i][9].setCurrentTileIndex(1);
-		}
-
-		pScene.setTouchAreaBindingOnActionDownEnabled(true);
+		currentSpriteList = new ArrayList<LetterButtonSprite>();
+		currentText = new String();
+		ignoreMove = false;
+		
 		pScene.setOnSceneTouchListener(this);
 
 		pOnPopulateSceneCallback.onPopulateSceneFinished();
@@ -163,16 +112,83 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	@Override
 	public boolean onSceneTouchEvent(Scene pScene, final TouchEvent pSceneTouchEvent)
 	{
-	    if (pSceneTouchEvent.isActionMove())
+		// zmienic wszystko na switch!
+		
+		if (pSceneTouchEvent.isActionMove() && ignoreMove)
+		{
+			System.out.println("move locked");
+			return true;
+		}
+		
+		if (ignoreMove && pSceneTouchEvent.isActionDown())
+		{
+			System.out.println("move unlocked");
+			ignoreMove = false;
+		}
+		
+	    if (pSceneTouchEvent.isActionMove() || pSceneTouchEvent.isActionDown())
 	    {
-			int i, j;
-			i = (int) pSceneTouchEvent.getY() / 96;
-			j = (int) pSceneTouchEvent.getX() / 93;
+			int i = (int) pSceneTouchEvent.getX() / BUTTON_WIDTH;
+			int j = (int) pSceneTouchEvent.getY() / BUTTON_HEIGHT;
 
-			if (mSpriteLetters[ROWS - 1 - i][j].getCurrentTileIndex() != 1) // do action like on touch
-				mSpriteLetters[ROWS - 1 - i][j].setCurrentTileIndex(1);
-
+			if (mSpriteLetters[i][j].getCurrentTileIndex() != 1)
+			{
+				onLetterButtonClick(i, j);
+			}
 	    }
-	    return false;
+	    
+	    return true;
+	}
+	
+	public void onLetterButtonClick(int i, int j) {
+		
+		if(currentSpriteList.isEmpty())
+		{
+			mSpriteLetters[i][j].setCurrentTileIndex(1);
+			currentSpriteList.add(mSpriteLetters[i][j]);
+			currentText += mSpriteLetters[i][j].getLetter();
+			return;
+		}
+			
+		if (mSpriteLetters[i][j].getX() != currentSpriteList.get(0).getX() &&
+				mSpriteLetters[i][j].getY() != currentSpriteList.get(0).getY())
+		{
+			for(LetterButtonSprite sprite : currentSpriteList)
+				sprite.resetBackground();
+			
+			currentSpriteList.clear();
+			currentText = "";
+			
+			ignoreMove = true;
+			
+			return;
+		}
+		
+		currentSpriteList.add(mSpriteLetters[i][j]);
+		currentText += mSpriteLetters[i][j].getLetter();
+		
+		// sprawdzic czy currentText to poprawna odpowiedz
+		if (!checkCorrectness())
+			mSpriteLetters[i][j].setCurrentTileIndex(1);
+	}
+	
+	public boolean checkCorrectness() {
+		
+		if(currentText.length() > 5)
+		{
+			ignoreMove = true;
+			currentText = "";
+			for(LetterButtonSprite sprite : currentSpriteList)
+			{
+				if(sprite.isLocked())
+					sprite.resetBackground();
+				else
+					sprite.lockIn();
+			}
+			currentSpriteList.clear();
+			return true;
+		}
+		else
+			return false;
 	}
 }
