@@ -6,7 +6,7 @@ Set of mind games:
 
 new games soon...
 
-XML: http://pastebin.com/0jyuaBKD
+XML: http://pastebin.com/hRfRKyaC
 
 Authors:
 Tomasz Fiołka & Marcin Wojaczek
