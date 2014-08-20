@@ -178,6 +178,8 @@ public class MainActivity extends BaseGameActivity {
 				switch (eventAction) {
 				case TouchEvent.ACTION_DOWN: {
 					System.out.println("top brain clicked");
+					startActivity(new Intent(pContext,
+							com.example.truefalse.MainActivity.class));
 					animateBrain();
 					break;
 				}
