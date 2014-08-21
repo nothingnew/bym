@@ -49,7 +49,7 @@ public class MainActivity extends BaseGameActivity {
 	private Camera mCamera;
 	//private Sound mSound;
 	private Font mFont;
-	private ITextureRegion mTextureRegionBackground, mTextureRegionFullBrain;
+	private ITextureRegion mTextureRegionBackground;
 	private ITextureRegion mTextureRegionBrain[];
 	private String mMenuString;
 	private Sprite brainSprite[];
