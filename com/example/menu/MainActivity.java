@@ -10,7 +10,11 @@ import org.andengine.engine.options.EngineOptions;
 import org.andengine.engine.options.ScreenOrientation;
 import org.andengine.engine.options.WakeLockOptions;
 import org.andengine.engine.options.resolutionpolicy.FillResolutionPolicy;
+import org.andengine.entity.IEntity;
+import org.andengine.entity.modifier.IEntityModifier.IEntityModifierListener;
 import org.andengine.entity.modifier.MoveByModifier;
+import org.andengine.entity.modifier.ParallelEntityModifier;
+import org.andengine.entity.modifier.ScaleModifier;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.text.Text;
@@ -29,6 +33,7 @@ import org.andengine.ui.activity.BaseGameActivity;
 import org.andengine.util.adt.align.HorizontalAlign;
 import org.andengine.util.adt.color.Color;
 import org.andengine.util.debug.Debug;
+import org.andengine.util.modifier.IModifier;
 
 import android.content.Context;
 import android.content.Intent;
@@ -44,11 +49,15 @@ public class MainActivity extends BaseGameActivity {
 	private Camera mCamera;
 	//private Sound mSound;
 	private Font mFont;
-	private ITextureRegion mTextureRegionBackground;
+	private ITextureRegion mTextureRegionBackground, mTextureRegionFullBrain;
 	private ITextureRegion mTextureRegionBrain[];
 	private String mMenuString;
 	private Sprite brainSprite[];
-
+	
+	private boolean splitted;
+	private boolean merged;
+	private boolean notStarted;
+	
 	@Override
 	public EngineOptions onCreateEngineOptions() {
 
@@ -141,8 +150,13 @@ public class MainActivity extends BaseGameActivity {
 		// nie dziala, leci error
 		// mSound.play();
 		
+		splitted = false;
+		merged = true;
+		notStarted = true;
+		
 		brainSprite = new Sprite[4];
-		brainSprite[0] = new Sprite(WIDTH / 2 - 250, HEIGHT / 2,
+		
+		brainSprite[0] = new Sprite(WIDTH / 2 - 250 + 90, HEIGHT / 2 - 110 - 35,
 				mTextureRegionBrain[0], getVertexBufferObjectManager()) {
 
 			@Override
@@ -154,9 +168,17 @@ public class MainActivity extends BaseGameActivity {
 				switch (eventAction) {
 				case TouchEvent.ACTION_DOWN: {
 					System.out.println("left brain clicked");
-					startActivity(new Intent(pContext,
-							com.example.imagequiz.MainActivity.class));
-					animateBrain();
+					
+					if (splitted == false && merged == true) {
+						brainSplit();
+						splitted = true;
+						merged = false;
+					} else {
+						brainMerge(0);
+						merged = true;
+						splitted = false;
+						notStarted = true;
+					}
 					break;
 				}
 				default:
@@ -166,7 +188,7 @@ public class MainActivity extends BaseGameActivity {
 				return true;
 			}
 		};
-		brainSprite[1] = new Sprite(WIDTH / 2, HEIGHT / 2 + 150,
+		brainSprite[1] = new Sprite(WIDTH / 2 - 5, HEIGHT / 2 + 150 - 110 - 100,
 				mTextureRegionBrain[1], getVertexBufferObjectManager()) {
 
 			@Override
@@ -178,9 +200,17 @@ public class MainActivity extends BaseGameActivity {
 				switch (eventAction) {
 				case TouchEvent.ACTION_DOWN: {
 					System.out.println("top brain clicked");
-					startActivity(new Intent(pContext,
-							com.example.truefalse.MainActivity.class));
-					animateBrain();
+					
+					if (splitted == false && merged == true) {
+						brainSplit();
+						splitted = true;
+						merged = false;
+					} else {
+						brainMerge(1);
+						merged = true;
+						splitted = false;
+						notStarted = true;
+					}
 					break;
 				}
 				default:
@@ -190,7 +220,7 @@ public class MainActivity extends BaseGameActivity {
 				return true;
 			}
 		};
-		brainSprite[2] = new Sprite(WIDTH / 2 + 250, HEIGHT / 2,
+		brainSprite[2] = new Sprite(WIDTH / 2 + 250 - 90, HEIGHT / 2 - 110,
 				mTextureRegionBrain[2], getVertexBufferObjectManager()) {
 
 			@Override
@@ -202,9 +232,17 @@ public class MainActivity extends BaseGameActivity {
 				switch (eventAction) {
 				case TouchEvent.ACTION_DOWN: {
 					System.out.println("right brain clicked");
-					startActivity(new Intent(pContext,
-							com.example.guesswhat.MainActivity.class));
-					animateBrain();
+					
+					if (splitted == false && merged == true) {
+						brainSplit();
+						splitted = true;
+						merged = false;
+					} else {
+						brainMerge(2);
+						merged = true;
+						splitted = false;
+						notStarted = true;
+					}
 					break;
 				}
 				default:
@@ -214,7 +252,7 @@ public class MainActivity extends BaseGameActivity {
 				return true;
 			}
 		};
-		brainSprite[3] = new Sprite(WIDTH / 2, HEIGHT / 2 - 150,
+		brainSprite[3] = new Sprite(WIDTH / 2 + 30, HEIGHT / 2 - 150 - 110 + 50,
 				mTextureRegionBrain[3], getVertexBufferObjectManager()) {
 
 			@Override
@@ -226,9 +264,17 @@ public class MainActivity extends BaseGameActivity {
 				switch (eventAction) {
 				case TouchEvent.ACTION_DOWN: {
 					System.out.println("bottom brain clicked");
-					startActivity(new Intent(pContext,
-							com.example.findwords.MainActivity.class));
-					animateBrain();
+
+					if (splitted == false && merged == true) {
+						brainSplit();
+						splitted = true;
+						merged = false;
+					} else {
+						brainMerge(3);
+						merged = true;
+						splitted = false;
+						notStarted = true;
+					}
 					break;
 				}
 				default:
@@ -290,16 +336,93 @@ public class MainActivity extends BaseGameActivity {
 		pOnPopulateSceneCallback.onPopulateSceneFinished();
 	}
 	
-	public void animateBrain() {
+	public void brainSplit() {
 		
 		MoveByModifier moveModifier[] = new MoveByModifier[4];
 		
-		moveModifier[0] = new MoveByModifier(1.5f, 90f, -35f);
-		moveModifier[1] = new MoveByModifier(1.5f, -5f, -100f);
-		moveModifier[2] = new MoveByModifier(1.5f, -90f, 0f);
-		moveModifier[3] = new MoveByModifier(1.5f, 30f, 50f);
+		moveModifier[0] = new MoveByModifier(0.8f, -90f, 35f);
+		moveModifier[1] = new MoveByModifier(0.8f, 5f, 100f);
+		moveModifier[2] = new MoveByModifier(0.8f, 90f, 0f);
+		moveModifier[3] = new MoveByModifier(0.8f, -30f, -50f);
 		
-		for (int i = 0; i < 4; ++i)
+		for (int i = 0; i < 4; ++i) {
 			brainSprite[i].registerEntityModifier(moveModifier[i]);
+		}
+	}
+	
+	public void brainMerge(final int index) {
+		
+		final Context pContext = this;
+		
+		IEntityModifierListener entityModifierListener = new IEntityModifierListener() {
+			
+			@Override
+			public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+				switch(index) {
+				case 0:
+					if(notStarted == true) {
+						startActivity(new Intent(pContext,
+								com.example.imagequiz.MainActivity.class));
+						notStarted = false;
+					}
+					break;
+				case 1:
+					if(notStarted == true) {
+						startActivity(new Intent(pContext,
+								com.example.truefalse.MainActivity.class));
+						notStarted = false;
+					}
+					break;
+				case 2:
+					if(notStarted == true) {
+						startActivity(new Intent(pContext,
+								com.example.guesswhat.MainActivity.class));
+						notStarted = false;
+					}
+					break;
+				case 3:
+					if(notStarted == true) {
+						startActivity(new Intent(pContext,
+								com.example.findwords.MainActivity.class));
+						notStarted = false;
+					}
+					break;
+				default:
+					System.out.println("Function 'brainMerge' error!");						
+				}
+			}
+		};
+		
+		// Moving
+		MoveByModifier moveModifier[] = new MoveByModifier[4];
+		
+		moveModifier[0] = new MoveByModifier(0.2f, 90f, -35f);
+		moveModifier[1] = new MoveByModifier(0.2f, -5f, -100f);
+		moveModifier[2] = new MoveByModifier(0.2f, -90f, 0f);
+		moveModifier[3] = new MoveByModifier(0.2f, 30f, 50f);
+		
+//		// Scaling
+//		ScaleModifier scaleModifier[] = new ScaleModifier[4];
+//		
+//		scaleModifier[0] = new ScaleModifier(0.2f, 1.0f, 0.0f);
+//		scaleModifier[1] = new ScaleModifier(0.2f, 1.0f, 0.0f);
+//		scaleModifier[2] = new ScaleModifier(0.2f, 1.0f, 0.0f);
+//		scaleModifier[3] = new ScaleModifier(0.2f, 1.0f, 0.0f);
+//		
+//		// Connecting moving and scaling together
+//		ParallelEntityModifier parallelEntityModifier[] = new ParallelEntityModifier[4];
+		
+		for (int i = 0; i < 4; ++i) {
+			moveModifier[i].addModifierListener(entityModifierListener);
+			brainSprite[i].registerEntityModifier(moveModifier[i]);
+//			parallelEntityModifier[i] = new ParallelEntityModifier(moveModifier[i], scaleModifier[i]);
+//			brainSprite[i].registerEntityModifier(parallelEntityModifier[i]);
+		}
 	}
 }
