@@ -1,6 +1,14 @@
 package com.example.findwords;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.util.List;
+import java.util.Random;
+
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 import org.andengine.audio.sound.Sound;
 import org.andengine.audio.sound.SoundFactory;
@@ -18,6 +26,7 @@ import org.andengine.opengl.texture.region.ITiledTextureRegion;
 import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.util.adt.color.Color;
 import org.andengine.util.debug.Debug;
+import org.xml.sax.InputSource;
 
 import android.content.Context;
 import android.graphics.Typeface;
@@ -31,6 +40,7 @@ public class ResourceManager {
 	public ITiledTextureRegion mGameTextureRegionBackground2;
 	public Sound mSound;
 	public Font mFont;
+	public List<List<String>> mGrids;
 	public String mLettersString;
 
 	ResourceManager() {
@@ -77,12 +87,35 @@ public class ResourceManager {
 		mFont.unload();
 	}
 
-	public synchronized void loadText() {
+	public synchronized void loadWords(Context pContext) {
 		
 		// no SIERPIE— because of no free space :)
 		mLettersString = "LISTOPADAKD" + "IMAJAMMICWK" + "PAèDZIERNIK"
 				+ "IRIGRUDZIE—" + "EZCZERWIECE" + "CEWLUTYICIZ" + "DCZISTYCZE—"
 				+ "ADWRZESIE—Y";
+		
+		try {
+
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			SAXParser saxParser = factory.newSAXParser();
+
+			XMLParser handler = new XMLParser();
+
+			InputStream inputStream = pContext.getAssets().open(
+					"xml/findwords/words.xml");
+			Reader reader = new InputStreamReader(inputStream, "UTF-8");
+
+			InputSource is = new InputSource(reader);
+			is.setEncoding("UTF-8");
+
+			saxParser.parse(is, handler);
+
+			// result
+			mGrids = handler.getResults();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public synchronized void loadGameTextures(Engine pEngine, Context pContext) {
@@ -135,5 +168,12 @@ public class ResourceManager {
 		mBitmapTextureAtlas2.unload();
 
 		System.gc();
+	}
+	
+	public synchronized List<String> getNewWords() {
+		
+		Random rgen = new Random();
+
+		return mGrids.get(rgen.nextInt(mGrids.size()));
 	}
 }
