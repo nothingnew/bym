@@ -6,7 +6,6 @@ import org.andengine.engine.options.EngineOptions;
 import org.andengine.engine.options.ScreenOrientation;
 import org.andengine.engine.options.WakeLockOptions;
 import org.andengine.engine.options.resolutionpolicy.FillResolutionPolicy;
-//import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.AnimatedSprite;
 import org.andengine.entity.sprite.AnimatedSprite.IAnimationListener;
@@ -14,16 +13,10 @@ import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.text.Text;
 import org.andengine.entity.util.FPSLogger;
 import org.andengine.input.touch.TouchEvent;
-//import org.andengine.input.touch.detector.SurfaceGestureDetector;
 import org.andengine.ui.activity.BaseGameActivity;
 import org.andengine.util.adt.align.HorizontalAlign;
 
-//import android.content.Intent;
-
 //import android.os.Looper;
-//import android.content.Context;
-
-//public class MainActivity extends BaseGameActivity implements IOnSceneTouchListener {
 
 public class MainActivity extends BaseGameActivity {
 
@@ -98,8 +91,6 @@ public class MainActivity extends BaseGameActivity {
 		mEngine.registerUpdateHandler(new FPSLogger());
 		
 		mScene = new Scene();
-		
-		//mScene.setOnSceneTouchListener(this);
 
 		pOnCreateSceneCallback.onCreateSceneFinished(mScene);
 	}
@@ -107,46 +98,6 @@ public class MainActivity extends BaseGameActivity {
 	@Override
 	public void onPopulateScene(Scene pScene,
 			OnPopulateSceneCallback pOnPopulateSceneCallback) {
-
-		// MENU
-		Sprite splashScreenSprite = new Sprite(WIDTH / 2, HEIGHT / 2,
-				ResourceManager.getInstance().mGameTextureRegionComplete,
-				getVertexBufferObjectManager()) {
-			@Override
-			public boolean onAreaTouched(final TouchEvent pSceneTouchEvent,
-					final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
-
-				int eventAction = pSceneTouchEvent.getAction();
-
-				switch (eventAction) {
-				case TouchEvent.ACTION_UP: {
-					mScene.unregisterTouchArea(this);
-					ResourceManager.getInstance().mSound[1].play();
-					initGame(mScene);
-					mScene.detachChild(this);
-					break;
-				}
-				default:
-					break;
-				}
-
-				return true;
-			}
-		};
-
-		String text = "Image Quiz :)\n\nSTART";
-
-		Text splashScreenText = new Text(splashScreenSprite.getWidth() / 2,
-				splashScreenSprite.getHeight() / 2,
-				ResourceManager.getInstance().mFont, text,
-				100, getVertexBufferObjectManager());
-		splashScreenText.setHorizontalAlign(HorizontalAlign.CENTER);
-		
-		splashScreenSprite.attachChild(splashScreenText);
-		pScene.attachChild(splashScreenSprite);
-		pScene.registerTouchArea(splashScreenSprite);
-
-		//////////////////////////////////////
 		
 		IAnimationListener pCorrectAnimationListener = new IAnimationListener() {
 
@@ -217,9 +168,9 @@ public class MainActivity extends BaseGameActivity {
 					getVertexBufferObjectManager());
 
 			buttonSprite[i].setCorrect(mQuestionData.getQuestionAnswer(i));
-			//MENU
-			//pScene.attachChild(buttonSprite[i]);
-			//pScene.registerTouchArea(buttonSprite[i]);
+			
+			pScene.attachChild(buttonSprite[i]);
+			pScene.registerTouchArea(buttonSprite[i]);
 		}
 
 		questionSprite = new Sprite(QUESTION_WIDTH / 2, QUESTION_HEIGHT
@@ -235,8 +186,7 @@ public class MainActivity extends BaseGameActivity {
 
 		questionSprite.attachChild(questionText);
 
-		//MENU
-		//pScene.attachChild(questionSprite);
+		pScene.attachChild(questionSprite);
 		
 		/////
 //		Looper.prepare();
@@ -290,23 +240,6 @@ public class MainActivity extends BaseGameActivity {
 		pOnPopulateSceneCallback.onPopulateSceneFinished();
 	}
 
-	private void initGame(Scene pScene) {
-		
-		for (int i = 0; i < 6; ++i) {
-			pScene.attachChild(buttonSprite[i]);
-			pScene.registerTouchArea(buttonSprite[i]);
-		}
-		
-		pScene.attachChild(questionSprite);
-		
-		correctAnswersCount = 0;
-		wrongAnswersCount = 0;
-		locker = false;
-		
-		//start innej apki
-		//startActivity(new Intent(this, MainActivity.class));
-	}
-	
 	public void onAnswersCheck() {
 
 		if (locker) // do not check when question is already finished
