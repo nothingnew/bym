@@ -3,8 +3,8 @@ Break Your Mind
 Set of mind games:
  - Image Quiz
  - Guess What
-
-new games soon...
+ - Find Words (work in progress)
+ - True False (work in progress)
 
 XML: http://pastebin.com/hRfRKyaC
 
