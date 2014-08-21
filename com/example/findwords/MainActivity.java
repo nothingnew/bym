@@ -1,6 +1,7 @@
 package com.example.findwords;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.andengine.engine.FixedStepEngine;
@@ -154,7 +155,8 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 			mCurrentText += mSpriteLetters[i][j].getLetter();
 			return;
 		}
-			
+		
+		// mAvailableSpriteList ?
 		if (mSpriteLetters[i][j].getX() != mCurrentSpriteList.get(0).getX() &&
 				mSpriteLetters[i][j].getY() != mCurrentSpriteList.get(0).getY())
 		{
@@ -170,8 +172,13 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 		}
 		
 		mCurrentSpriteList.add(mSpriteLetters[i][j]);
-		mCurrentText += mSpriteLetters[i][j].getLetter();
-		
+		Collections.sort(mCurrentSpriteList, new LetterButtonComparator());
+		mCurrentText = "";
+		for (LetterButtonSprite sprite : mCurrentSpriteList)
+		{
+			mCurrentText += sprite.getLetter();
+		}
+				
 		// sprawdzic czy currentText to poprawna odpowiedz
 		if (!checkCorrectness())
 			mSpriteLetters[i][j].setCurrentTileIndex(1);
