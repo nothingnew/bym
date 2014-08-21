@@ -78,7 +78,7 @@ class LetterButtonComparator implements Comparator<LetterButtonSprite> {
 	@Override
 	public int compare(LetterButtonSprite arg0, LetterButtonSprite arg1) {
 		if (arg0.getX() == arg1.getX())
-			return arg0.getY() < arg1.getY() ? -1 : 1;
+			return arg0.getY() < arg1.getY() ? 1 : -1;
 		else
 			return arg0.getX() < arg1.getX() ? -1 : 1;
 	}
