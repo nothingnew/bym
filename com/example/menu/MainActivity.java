@@ -16,6 +16,7 @@ import org.andengine.entity.modifier.MoveByModifier;
 import org.andengine.entity.modifier.ParallelEntityModifier;
 import org.andengine.entity.modifier.ScaleModifier;
 import org.andengine.entity.scene.Scene;
+import org.andengine.entity.scene.background.Background;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.text.Text;
 import org.andengine.entity.util.FPSLogger;
@@ -50,9 +51,11 @@ public class MainActivity extends BaseGameActivity {
 	//private Sound mSound;
 	private Font mFont;
 	private ITextureRegion mTextureRegionBackground;
+	private ITextureRegion mTextureRegionTitle;
 	private ITextureRegion mTextureRegionBrain[];
 	private String mMenuString;
 	private Sprite brainSprite[];
+	private Sprite titleSprite;
 	
 	private boolean splitted;
 	private boolean merged;
@@ -84,7 +87,9 @@ public class MainActivity extends BaseGameActivity {
 
 		BuildableBitmapTextureAtlas mBitmapTextureAtlas1 = new BuildableBitmapTextureAtlas(
 				mEngine.getTextureManager(), 1024, 768);
-
+		BuildableBitmapTextureAtlas mBitmapTextureAtlas2 = new BuildableBitmapTextureAtlas(
+				mEngine.getTextureManager(), 1024, 200);
+		
 		mTextureRegionBackground = BitmapTextureAtlasTextureRegionFactory
 				.createFromAsset(mBitmapTextureAtlas1, this, "background.png");
 		mTextureRegionBrain = new ITextureRegion[4];
@@ -96,13 +101,19 @@ public class MainActivity extends BaseGameActivity {
 				.createFromAsset(mBitmapTextureAtlas1, this, "right.png");
 		mTextureRegionBrain[3] = BitmapTextureAtlasTextureRegionFactory
 				.createFromAsset(mBitmapTextureAtlas1, this, "bottom.png");
+		mTextureRegionTitle = BitmapTextureAtlasTextureRegionFactory
+				.createFromAsset(mBitmapTextureAtlas2, this, "title.png");
 
 		try {
 			mBitmapTextureAtlas1
 					.build(new BlackPawnTextureAtlasBuilder<IBitmapTextureAtlasSource, BitmapTextureAtlas>(
 							0, 1, 1));
+			mBitmapTextureAtlas2
+					.build(new BlackPawnTextureAtlasBuilder<IBitmapTextureAtlasSource, BitmapTextureAtlas>(
+							0, 0, 0));
 
 			mBitmapTextureAtlas1.load();
+			mBitmapTextureAtlas2.load();
 		} catch (TextureAtlasBuilderException e) {
 			Debug.e(e);
 		}
@@ -153,6 +164,10 @@ public class MainActivity extends BaseGameActivity {
 		splitted = false;
 		merged = true;
 		notStarted = true;
+		
+		titleSprite = new Sprite(WIDTH / 2, HEIGHT - 100, 
+				mTextureRegionTitle, getVertexBufferObjectManager());
+		pScene.attachChild(titleSprite);
 		
 		brainSprite = new Sprite[4];
 		
@@ -331,6 +346,8 @@ public class MainActivity extends BaseGameActivity {
 			pScene.registerTouchArea(brainSprite[i]);
 		}
 
+		pScene.setBackgroundEnabled(true);
+		pScene.setBackground(new Background(1.0f, 1.0f, 1.0f));
 		pScene.setTouchAreaBindingOnActionDownEnabled(true);
 
 		pOnPopulateSceneCallback.onPopulateSceneFinished();
