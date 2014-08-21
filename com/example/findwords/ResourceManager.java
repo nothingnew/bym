@@ -21,9 +21,7 @@ import org.andengine.opengl.texture.atlas.bitmap.BuildableBitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.source.IBitmapTextureAtlasSource;
 import org.andengine.opengl.texture.atlas.buildable.builder.BlackPawnTextureAtlasBuilder;
 import org.andengine.opengl.texture.atlas.buildable.builder.ITextureAtlasBuilder.TextureAtlasBuilderException;
-import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.opengl.texture.region.ITiledTextureRegion;
-import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.util.adt.color.Color;
 import org.andengine.util.debug.Debug;
 import org.xml.sax.InputSource;
@@ -36,8 +34,7 @@ public class ResourceManager {
 
 	private static ResourceManager INSTANCE;
 
-	public ITextureRegion mGameTextureRegionBackground[];
-	public ITiledTextureRegion mGameTextureRegionBackground2;
+	public ITiledTextureRegion mGameTextureRegionBackground;
 	public Sound mSound;
 	public Font mFont;
 	public List<List<String>> mGrids;
@@ -122,36 +119,19 @@ public class ResourceManager {
 
 		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/findwords/");
 
-		BuildableBitmapTextureAtlas mBitmapTextureAtlas = new BuildableBitmapTextureAtlas(
-				pEngine.getTextureManager(), 310, 310);
 		
-		BuildableBitmapTextureAtlas mBitmapTextureAtlas2 = new BuildableBitmapTextureAtlas(
+		BuildableBitmapTextureAtlas mBitmapTextureAtlas = new BuildableBitmapTextureAtlas(
 				pEngine.getTextureManager(), 300, 100);
 		
-		mGameTextureRegionBackground2 = BitmapTextureAtlasTextureRegionFactory
-				.createTiledFromAsset(mBitmapTextureAtlas2, pContext,
+		mGameTextureRegionBackground = BitmapTextureAtlasTextureRegionFactory
+				.createTiledFromAsset(mBitmapTextureAtlas, pContext,
 						"background.png", 3, 1);
-
-		mGameTextureRegionBackground = new TextureRegion[3];
-		mGameTextureRegionBackground[0] = BitmapTextureAtlasTextureRegionFactory
-				.createFromAsset(mBitmapTextureAtlas, pContext,
-						"background1.png");
-		mGameTextureRegionBackground[1] = BitmapTextureAtlasTextureRegionFactory
-				.createFromAsset(mBitmapTextureAtlas, pContext,
-						"background2.png");
-		mGameTextureRegionBackground[2] = BitmapTextureAtlasTextureRegionFactory
-				.createFromAsset(mBitmapTextureAtlas, pContext,
-						"background3.png");
 
 		try {
 			mBitmapTextureAtlas
-					.build(new BlackPawnTextureAtlasBuilder<IBitmapTextureAtlasSource, BitmapTextureAtlas>(
-							0, 1, 1));
-			mBitmapTextureAtlas2
 			.build(new BlackPawnTextureAtlasBuilder<IBitmapTextureAtlasSource, BitmapTextureAtlas>(
 					0, 0, 0));
 			mBitmapTextureAtlas.load();
-			mBitmapTextureAtlas2.load();
 		} catch (TextureAtlasBuilderException e) {
 			Debug.e(e);
 		}
@@ -159,13 +139,9 @@ public class ResourceManager {
 	
 	public synchronized void unloadGameTextures() {
 
-		BuildableBitmapTextureAtlas mBitmapTextureAtlas = (BuildableBitmapTextureAtlas) mGameTextureRegionBackground[0]
+		BuildableBitmapTextureAtlas mBitmapTextureAtlas = (BuildableBitmapTextureAtlas) mGameTextureRegionBackground
 				.getTexture();
 		mBitmapTextureAtlas.unload();
-		
-		BuildableBitmapTextureAtlas mBitmapTextureAtlas2 = (BuildableBitmapTextureAtlas) mGameTextureRegionBackground2
-				.getTexture();
-		mBitmapTextureAtlas2.unload();
 
 		System.gc();
 	}

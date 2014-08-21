@@ -99,7 +99,7 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 				mSpriteLetters[i][j] = new LetterButtonSprite(
 						BUTTON_WIDTH / 2 + i * BUTTON_WIDTH,
 						BUTTON_HEIGHT / 2 + j * BUTTON_HEIGHT,
-						ResourceManager.getInstance().mGameTextureRegionBackground2,
+						ResourceManager.getInstance().mGameTextureRegionBackground,
 						ResourceManager.getInstance().mFont,
 						ResourceManager.getInstance().mLettersString
 						.subSequence(j * COLUMNS + i, j * COLUMNS + i + 1),
