@@ -21,6 +21,7 @@ import org.andengine.opengl.texture.atlas.bitmap.BuildableBitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.source.IBitmapTextureAtlasSource;
 import org.andengine.opengl.texture.atlas.buildable.builder.BlackPawnTextureAtlasBuilder;
 import org.andengine.opengl.texture.atlas.buildable.builder.ITextureAtlasBuilder.TextureAtlasBuilderException;
+import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.opengl.texture.region.ITiledTextureRegion;
 import org.andengine.util.adt.color.Color;
 import org.andengine.util.debug.Debug;
@@ -35,10 +36,10 @@ public class ResourceManager {
 	private static ResourceManager INSTANCE;
 
 	public ITiledTextureRegion mGameTextureRegionBackground;
+	public ITextureRegion mGameTextureRegionComplete;
 	public Sound mSound;
 	public Font mFont;
 	public List<List<String>> mGrids;
-	public String mLettersString;
 
 	ResourceManager() {
 		// The constructor is of no use to us
@@ -72,7 +73,7 @@ public class ResourceManager {
 		FontFactory.setAssetBasePath("fonts/");
 
 		mFont = FontFactory.create(pEngine.getFontManager(),
-				pEngine.getTextureManager(), 256, 256,
+				pEngine.getTextureManager(), 300, 300,
 				Typeface.create(Typeface.DEFAULT, Typeface.NORMAL), 48f, true,
 				Color.BLACK_ARGB_PACKED_INT);
 
@@ -85,11 +86,6 @@ public class ResourceManager {
 	}
 
 	public synchronized void loadWords(Context pContext) {
-		
-		// no SIERPIE— because of no free space :)
-		mLettersString = "LISTOPADAKD" + "IMAJAMMICWK" + "PAèDZIERNIK"
-				+ "IRIGRUDZIE—" + "EZCZERWIECE" + "CEWLUTYICIZ" + "DCZISTYCZE—"
-				+ "ADWRZESIE—Y";
 		
 		try {
 
@@ -120,18 +116,26 @@ public class ResourceManager {
 		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/findwords/");
 
 		
-		BuildableBitmapTextureAtlas mBitmapTextureAtlas = new BuildableBitmapTextureAtlas(
+		BuildableBitmapTextureAtlas mBitmapTextureAtlas1 = new BuildableBitmapTextureAtlas(
 				pEngine.getTextureManager(), 300, 100);
+		BuildableBitmapTextureAtlas mBitmapTextureAtlas2 = new BuildableBitmapTextureAtlas(
+				pEngine.getTextureManager(), 800, 300);
 		
 		mGameTextureRegionBackground = BitmapTextureAtlasTextureRegionFactory
-				.createTiledFromAsset(mBitmapTextureAtlas, pContext,
+				.createTiledFromAsset(mBitmapTextureAtlas1, pContext,
 						"background.png", 3, 1);
+		mGameTextureRegionComplete = BitmapTextureAtlasTextureRegionFactory
+				.createFromAsset(mBitmapTextureAtlas2, pContext, "complete.png");
 
 		try {
-			mBitmapTextureAtlas
+			mBitmapTextureAtlas1
 			.build(new BlackPawnTextureAtlasBuilder<IBitmapTextureAtlasSource, BitmapTextureAtlas>(
 					0, 0, 0));
-			mBitmapTextureAtlas.load();
+			mBitmapTextureAtlas2
+			.build(new BlackPawnTextureAtlasBuilder<IBitmapTextureAtlasSource, BitmapTextureAtlas>(
+					0, 1, 1));
+			mBitmapTextureAtlas1.load();
+			mBitmapTextureAtlas2.load();
 		} catch (TextureAtlasBuilderException e) {
 			Debug.e(e);
 		}
@@ -139,9 +143,12 @@ public class ResourceManager {
 	
 	public synchronized void unloadGameTextures() {
 
-		BuildableBitmapTextureAtlas mBitmapTextureAtlas = (BuildableBitmapTextureAtlas) mGameTextureRegionBackground
+		BuildableBitmapTextureAtlas mBitmapTextureAtlas1 = (BuildableBitmapTextureAtlas) mGameTextureRegionBackground
 				.getTexture();
-		mBitmapTextureAtlas.unload();
+		mBitmapTextureAtlas1.unload();
+		BuildableBitmapTextureAtlas mBitmapTextureAtlas2 = (BuildableBitmapTextureAtlas) mGameTextureRegionComplete
+				.getTexture();
+		mBitmapTextureAtlas2.unload();
 
 		System.gc();
 	}
@@ -149,10 +156,6 @@ public class ResourceManager {
 	public synchronized List<String> getNewWords() {
 		
 		Random rgen = new Random();
-
 		return mGrids.get(rgen.nextInt(mGrids.size()));
-		
-		// poki nie ma generowania siatki z wyrazow
-		//return mGrids.get(0);
 	}
 }

@@ -3,6 +3,7 @@ package com.example.findwords;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 
 import org.andengine.engine.FixedStepEngine;
@@ -11,11 +12,22 @@ import org.andengine.engine.options.EngineOptions;
 import org.andengine.engine.options.ScreenOrientation;
 import org.andengine.engine.options.WakeLockOptions;
 import org.andengine.engine.options.resolutionpolicy.FillResolutionPolicy;
+import org.andengine.entity.IEntity;
+import org.andengine.entity.modifier.MoveByModifier;
+import org.andengine.entity.modifier.DelayModifier;
+import org.andengine.entity.modifier.IEntityModifier.IEntityModifierListener;
+import org.andengine.entity.modifier.ParallelEntityModifier;
+import org.andengine.entity.modifier.ScaleModifier;
+import org.andengine.entity.modifier.SequenceEntityModifier;
 import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.Scene;
+import org.andengine.entity.sprite.Sprite;
+import org.andengine.entity.text.Text;
 import org.andengine.entity.util.FPSLogger;
 import org.andengine.input.touch.TouchEvent;
 import org.andengine.ui.activity.BaseGameActivity;
+import org.andengine.util.adt.align.HorizontalAlign;
+import org.andengine.util.modifier.IModifier;
 
 public class MainActivity extends BaseGameActivity implements
 		IOnSceneTouchListener {
@@ -123,6 +135,9 @@ public class MainActivity extends BaseGameActivity implements
 			final TouchEvent pSceneTouchEvent) {
 		// zmienic wszystko na switch!
 
+		if (mCurrentWordsList.isEmpty())
+			return true;
+
 		if (pSceneTouchEvent.isActionMove() && mIgnoreMove) {
 			System.out.println("move locked");
 			return true;
@@ -158,9 +173,6 @@ public class MainActivity extends BaseGameActivity implements
 			return;
 		}
 
-		// mAvailableSpriteList ?
-		// if (mSpriteLetters[i][j].getX() != mCurrentSpriteList.get(0).getX()
-		// && mSpriteLetters[i][j].getY() != mCurrentSpriteList.get(0).getY()) {
 		if (!mAvailableSpriteList.contains(mSpriteLetters[i][j])) {
 
 			for (LetterButtonSprite sprite : mCurrentSpriteList)
@@ -206,10 +218,8 @@ public class MainActivity extends BaseGameActivity implements
 
 				if (mCurrentWordsList.isEmpty())
 				{
-					// dodac ekran koncowy
-					loadNewGrid();
-					//System.out.println("THE END");
-					//finish();
+					onTaskComplete();
+					System.out.println("grid finished");
 				}
 				return true;
 			}
@@ -226,7 +236,6 @@ public class MainActivity extends BaseGameActivity implements
 		if (mCurrentSpriteList.isEmpty())
 			return;
 
-		// pomylone rows z columns, powinno byc [column][row]
 		LetterButtonSprite first = mCurrentSpriteList.get(0);
 		int firstColumn = (int) first.getX() / BUTTON_WIDTH;
 		int firstRow = (int) first.getY() / BUTTON_HEIGHT;
@@ -298,7 +307,7 @@ public class MainActivity extends BaseGameActivity implements
 		row = 0;
 		Collections.shuffle(mCurrentWordsList);
 		for (String word : mCurrentWordsList) {
-			System.out.println("przetwarzane slowo: "+word);
+			System.out.println("przetwarzane slowo: " + word);
 			
 			if (row == ROWS) // too much words :)
 			{
@@ -310,11 +319,11 @@ public class MainActivity extends BaseGameActivity implements
 			if (word.length() == COLUMNS)
 				column = 0;
 			else
-				column = rgen.nextInt(COLUMNS - word.length());
+				column = rgen.nextInt(COLUMNS - word.length() + 1);
 
 			// put word into grid
 			for (int i = 0; i < word.length(); ++i)
-				mSpriteLetters[column + i][row].setLetter(word.toUpperCase().subSequence(i, i+1));
+				mSpriteLetters[column + i][row].setLetter(word.toUpperCase(Locale.getDefault()).subSequence(i, i + 1));
 			
 			++row;
 		}
@@ -325,17 +334,86 @@ public class MainActivity extends BaseGameActivity implements
 				if (mSpriteLetters[i][j].getLetter() == " ")
 				{
 					mSpriteLetters[i][j].setLetter(String.valueOf(alphabet.charAt(rgen.nextInt(alphabet.length()))));
-					System.out.println("dodano losowa literke: "+mSpriteLetters[i][j].getLetter());
+					System.out.println("dodano losowa literke: " + mSpriteLetters[i][j].getLetter());
 				}
 			}
 		}
-		
-//		for (int i = 0; i < COLUMNS; ++i) {
-//			for (int j = 0; j < ROWS; ++j) {
-//				mSpriteLetters[i][j]
-//						.setLetter(ResourceManager.getInstance().mLettersString
-//								.subSequence(j * COLUMNS + i, j * COLUMNS + i + 1));
-//			}
-//		}
+	}
+
+	public void onTaskComplete() {
+
+		Sprite completeSprite = new Sprite(WIDTH / 2, HEIGHT / 2 - 200,
+				ResourceManager.getInstance().mGameTextureRegionComplete,
+				getVertexBufferObjectManager());
+
+		String text= "DOBRZE\n£adujê nowe zadanie.";
+		Text completeText = new Text(completeSprite.getWidth() / 2,
+				completeSprite.getHeight() / 2,
+				ResourceManager.getInstance().mFont, text,
+				100, getVertexBufferObjectManager());
+		completeText.setHorizontalAlign(HorizontalAlign.CENTER);
+		completeSprite.attachChild(completeText);
+
+		// Animation control
+		IEntityModifierListener enterModifierListener = new IEntityModifierListener() {
+
+			@Override
+			public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+				ResourceManager.getInstance().mSound.play();
+			}
+
+			@Override
+			public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+//				pModifier.reset();
+//				pItem.clearEntityModifiers();
+//				pItem.unregisterEntityModifier((IEntityModifier) pModifier);
+			}
+		};
+
+		IEntityModifierListener exitModifierListener = new IEntityModifierListener() {
+
+			@Override
+			public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+				loadNewGrid();
+			}
+
+			@Override
+			public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+//				pModifier.reset();
+//				pItem.clearEntityModifiers();
+//				pItem.unregisterEntityModifier((IEntityModifier) pModifier);
+				pItem.detachChildren();
+				pItem.detachSelf();
+			}
+		};
+
+		// Moving
+		MoveByModifier moveModifier[] = new MoveByModifier[2];
+		moveModifier[0] = new MoveByModifier(1.5f, 0f, 200f);
+		moveModifier[1] = new MoveByModifier(1.0f, 0f, 100f);
+
+		// Scaling
+		ScaleModifier scaleModifier[] = new ScaleModifier[2];
+		scaleModifier[0] = new ScaleModifier(1.5f, 0.0f, 1.0f);
+		scaleModifier[1] = new ScaleModifier(1.0f, 1.0f, 0.0f);
+
+		// Delay
+		DelayModifier delayModifier = new DelayModifier(1.5f);
+
+		// Connecting moving and scaling together
+		ParallelEntityModifier parallelEntityModifier[] = new ParallelEntityModifier[2];
+		parallelEntityModifier[0] = new ParallelEntityModifier(moveModifier[0], scaleModifier[0]);
+		parallelEntityModifier[1] = new ParallelEntityModifier(moveModifier[1], scaleModifier[1]);
+		parallelEntityModifier[0].addModifierListener(enterModifierListener);
+		parallelEntityModifier[1].addModifierListener(exitModifierListener);
+
+		// Final animation modifier
+		SequenceEntityModifier sequenceEntityModifier = 
+				new SequenceEntityModifier(parallelEntityModifier[0], delayModifier, parallelEntityModifier[1]);
+
+		mScene.attachChild(completeSprite);
+
+		// Apply animation
+		completeSprite.registerEntityModifier(sequenceEntityModifier);
 	}
 }
