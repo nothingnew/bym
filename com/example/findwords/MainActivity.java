@@ -204,10 +204,12 @@ public class MainActivity extends BaseGameActivity implements
 				mCurrentSpriteList.clear();
 				mCurrentWordsList.remove(word);
 
-				if (mCurrentWordsList.isEmpty()) // THE END
+				if (mCurrentWordsList.isEmpty())
 				{
-					System.out.println("THE END");
-					finish();
+					// dodac ekran koncowy
+					loadNewGrid();
+					//System.out.println("THE END");
+					//finish();
 				}
 				return true;
 			}
@@ -285,12 +287,13 @@ public class MainActivity extends BaseGameActivity implements
 		int column, row;
 		Random rgen = new Random();
 		
-		// generate new grid from words
-		
 		// clear old grid
 		for (int i = 0; i < COLUMNS; ++i)
 			for (int j = 0; j < ROWS; ++j)
+			{
 				mSpriteLetters[i][j].setLetter(" ");
+				mSpriteLetters[i][j].Reset();
+			}
 		
 		row = 0;
 		Collections.shuffle(mCurrentWordsList);
