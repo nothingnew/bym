@@ -29,6 +29,8 @@ import org.andengine.ui.activity.BaseGameActivity;
 import org.andengine.util.adt.align.HorizontalAlign;
 import org.andengine.util.modifier.IModifier;
 
+import android.util.Log;
+
 public class MainActivity extends BaseGameActivity implements
 		IOnSceneTouchListener {
 
@@ -291,7 +293,14 @@ public class MainActivity extends BaseGameActivity implements
 
 	public void loadNewGrid() {
 
-		mCurrentWordsList = ResourceManager.getInstance().getNewWords();
+		// must be local copy due to remove operations
+		mCurrentWordsList = new ArrayList<String>();
+		mCurrentWordsList.addAll(ResourceManager.getInstance().getNewWords());
+		// DEBUG
+		Log.v("wordlist", "wordlist size = " + String.valueOf(mCurrentWordsList.size()));
+		for (int i = 0; i < mCurrentWordsList.size(); ++i)
+			Log.v("wordlist", mCurrentWordsList.get(i));
+		///////////////////
 		//int counter;
 		int column, row;
 		Random rgen = new Random();
@@ -306,6 +315,11 @@ public class MainActivity extends BaseGameActivity implements
 		
 		row = 0;
 		Collections.shuffle(mCurrentWordsList);
+		// DEBUG
+		Log.v("wordlist", "wordlist after shuffle");
+		for (int i = 0; i < mCurrentWordsList.size(); ++i)
+			Log.v("wordlist", mCurrentWordsList.get(i));
+		//////////////////
 		for (String word : mCurrentWordsList) {
 			System.out.println("przetwarzane slowo: " + word);
 			

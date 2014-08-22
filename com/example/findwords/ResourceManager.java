@@ -109,6 +109,16 @@ public class ResourceManager {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		// DEBUG
+		Log.v("mGrids", "mGrids size = " + String.valueOf(mGrids.size()));
+		for (List<String> mCurrentWordsList : mGrids)
+		{
+			Log.v("mGrids mCurrentWordsList", "mCurrentWordsList size = " + String.valueOf(mCurrentWordsList.size()));
+			for (int i = 0; i < mCurrentWordsList.size(); ++i)
+				Log.v("mGrids mCurrentWordsList", mCurrentWordsList.get(i));
+		}
+		//////////////////
 	}
 
 	public synchronized void loadGameTextures(Engine pEngine, Context pContext) {
