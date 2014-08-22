@@ -62,7 +62,7 @@ public class MainActivity extends BaseGameActivity implements
 
 		// Load words
 		ResourceManager.getInstance().loadWords(this);
-		mCurrentWordsList = ResourceManager.getInstance().getNewWords();
+		// mCurrentWordsList = ResourceManager.getInstance().getNewWords();
 
 		// Load sounds
 		ResourceManager.getInstance().loadSounds(mEngine, this);
@@ -102,14 +102,14 @@ public class MainActivity extends BaseGameActivity implements
 						BUTTON_WIDTH / 2 + i * BUTTON_WIDTH,
 						BUTTON_HEIGHT / 2 + j * BUTTON_HEIGHT,
 						ResourceManager.getInstance().mGameTextureRegionBackground,
-						ResourceManager.getInstance().mFont, ResourceManager
-								.getInstance().mLettersString.subSequence(j
-								* COLUMNS + i, j * COLUMNS + i + 1),
+						ResourceManager.getInstance().mFont, "X",
 						getVertexBufferObjectManager());
 
 				pScene.attachChild(mSpriteLetters[i][j]);
 			}
 		}
+
+		loadNewGrid();
 
 		pScene.setOnSceneTouchListener(this);
 
@@ -157,10 +157,10 @@ public class MainActivity extends BaseGameActivity implements
 		}
 
 		// mAvailableSpriteList ?
-//		if (mSpriteLetters[i][j].getX() != mCurrentSpriteList.get(0).getX()
-//				&& mSpriteLetters[i][j].getY() != mCurrentSpriteList.get(0).getY()) {
+		// if (mSpriteLetters[i][j].getX() != mCurrentSpriteList.get(0).getX()
+		// && mSpriteLetters[i][j].getY() != mCurrentSpriteList.get(0).getY()) {
 		if (!mAvailableSpriteList.contains(mSpriteLetters[i][j])) {
-			
+
 			for (LetterButtonSprite sprite : mCurrentSpriteList)
 				sprite.resetBackground();
 
@@ -226,20 +226,25 @@ public class MainActivity extends BaseGameActivity implements
 		LetterButtonSprite first = mCurrentSpriteList.get(0);
 		int firstColumn = (int) first.getX() / BUTTON_WIDTH;
 		int firstRow = (int) first.getY() / BUTTON_HEIGHT;
-		
-		System.out.println("first element: "+String.valueOf(firstColumn)+" "+String.valueOf(firstRow));
+
+		System.out.println("first element: " + String.valueOf(firstColumn)
+				+ " " + String.valueOf(firstRow));
 
 		// if there is only one sprite we can go in both directions
 		if (mCurrentSpriteList.size() == 1) {
-			
+
 			if (firstColumn != 0) // not in first row
-				mAvailableSpriteList.add(mSpriteLetters[firstColumn - 1][firstRow]);
+				mAvailableSpriteList
+						.add(mSpriteLetters[firstColumn - 1][firstRow]);
 			if (firstColumn != COLUMNS - 1) // not in last row
-				mAvailableSpriteList.add(mSpriteLetters[firstColumn + 1][firstRow]);
+				mAvailableSpriteList
+						.add(mSpriteLetters[firstColumn + 1][firstRow]);
 			if (firstRow != 0) // not in first column
-				mAvailableSpriteList.add(mSpriteLetters[firstColumn][firstRow - 1]);
+				mAvailableSpriteList
+						.add(mSpriteLetters[firstColumn][firstRow - 1]);
 			if (firstRow != ROWS - 1) // not in last column
-				mAvailableSpriteList.add(mSpriteLetters[firstColumn][firstRow + 1]);
+				mAvailableSpriteList
+						.add(mSpriteLetters[firstColumn][firstRow + 1]);
 
 			return;
 		}
@@ -247,22 +252,42 @@ public class MainActivity extends BaseGameActivity implements
 		LetterButtonSprite last = mCurrentSpriteList.get(mCurrentSpriteList.size() - 1);
 		int lastColumn = (int) last.getX() / BUTTON_WIDTH;
 		int lastRow = (int) last.getY() / BUTTON_HEIGHT;
-		System.out.println("last element: "+String.valueOf(lastColumn)+" "+String.valueOf(lastRow));
+		System.out.println("last element: " + String.valueOf(lastColumn) + " "
+				+ String.valueOf(lastRow));
 
 		// if there are more sprites we can go only in one direction
 		if (firstColumn == lastColumn) {
 			if (lastRow != 0) // not in first column
-				mAvailableSpriteList.add(mSpriteLetters[firstColumn][lastRow - 1]);
+				mAvailableSpriteList
+						.add(mSpriteLetters[firstColumn][lastRow - 1]);
 			if (firstRow != ROWS - 1) // not in last column
-				mAvailableSpriteList.add(mSpriteLetters[firstColumn][firstRow + 1]);
+				mAvailableSpriteList
+						.add(mSpriteLetters[firstColumn][firstRow + 1]);
 		} else if (firstRow == lastRow) {
 			if (firstColumn != 0) // not in first row
-				mAvailableSpriteList.add(mSpriteLetters[firstColumn - 1][firstRow]);
+				mAvailableSpriteList
+						.add(mSpriteLetters[firstColumn - 1][firstRow]);
 			if (lastColumn != COLUMNS - 1) // not in last row
-				mAvailableSpriteList.add(mSpriteLetters[lastColumn + 1][firstRow]);
+				mAvailableSpriteList
+						.add(mSpriteLetters[lastColumn + 1][firstRow]);
 		} else
 			System.out.println("updateAvailableSprites: WTF? to nie powinno miec miejsca!");
 
 		return;
+	}
+
+	public void loadNewGrid() {
+
+		mCurrentWordsList = ResourceManager.getInstance().getNewWords();
+		
+		// generate new grid from words
+
+		for (int i = 0; i < COLUMNS; ++i) {
+			for (int j = 0; j < ROWS; ++j) {
+				mSpriteLetters[i][j]
+						.setLetter(ResourceManager.getInstance().mLettersString
+								.subSequence(j * COLUMNS + i, j * COLUMNS + i + 1));
+			}
+		}
 	}
 }

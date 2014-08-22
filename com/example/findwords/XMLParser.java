@@ -40,7 +40,8 @@ public class XMLParser extends DefaultHandler {
 		//System.out.println("End Element :" + qName);
 
 		if (qName.equalsIgnoreCase("GRID")) {
-			grids.add(words);
+			if (!words.isEmpty())
+				grids.add(words);
 		}
 	}
 
@@ -50,11 +51,10 @@ public class XMLParser extends DefaultHandler {
 		//System.out.println(new String(ch, start, length));
 
 		if (bText) {
-//			System.out.println("Question Text : "
-//					+ new String(ch, start, length));
+//			System.out.println("Word : " + new String(ch, start, length));
 			bText = false;
-
-			words.add(new String(ch, start, length));
+			if (length <= 11)
+				words.add(new String(ch, start, length));
 		}
 	}
 
