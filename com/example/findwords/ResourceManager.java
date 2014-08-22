@@ -148,11 +148,11 @@ public class ResourceManager {
 	
 	public synchronized List<String> getNewWords() {
 		
-		//Random rgen = new Random();
+		Random rgen = new Random();
 
-		//return mGrids.get(rgen.nextInt(mGrids.size()));
+		return mGrids.get(rgen.nextInt(mGrids.size()));
 		
 		// poki nie ma generowania siatki z wyrazow
-		return mGrids.get(0);
+		//return mGrids.get(0);
 	}
 }

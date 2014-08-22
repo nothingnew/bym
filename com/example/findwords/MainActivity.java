@@ -3,6 +3,7 @@ package com.example.findwords;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 import org.andengine.engine.FixedStepEngine;
 import org.andengine.engine.camera.Camera;
@@ -25,6 +26,7 @@ public class MainActivity extends BaseGameActivity implements
 	private static final int BUTTON_HEIGHT = 96;
 	private static final int ROWS = 8;
 	private static final int COLUMNS = 11;
+	private static final String alphabet = "A•BC∆DE FGHIJKL£MN—O”PQRSåTUVWXYZèØ";
 
 	private Scene mScene;
 	private Camera mCamera;
@@ -279,15 +281,58 @@ public class MainActivity extends BaseGameActivity implements
 	public void loadNewGrid() {
 
 		mCurrentWordsList = ResourceManager.getInstance().getNewWords();
+		//int counter;
+		int column, row;
+		Random rgen = new Random();
 		
 		// generate new grid from words
+		
+		// clear old grid
+		for (int i = 0; i < COLUMNS; ++i)
+			for (int j = 0; j < ROWS; ++j)
+				mSpriteLetters[i][j].setLetter(" ");
+		
+		row = 0;
+		Collections.shuffle(mCurrentWordsList);
+		for (String word : mCurrentWordsList) {
+			System.out.println("przetwarzane slowo: "+word);
+			
+			if (row == ROWS) // too much words :)
+			{
+				System.out.println("za duzo slow (>8), ucinam");
+				mCurrentWordsList = mCurrentWordsList.subList(0, ROWS);
+				break;
+			}
+			
+			if (word.length() == COLUMNS)
+				column = 0;
+			else
+				column = rgen.nextInt(COLUMNS - word.length());
 
+			// put word into grid
+			for (int i = 0; i < word.length(); ++i)
+				mSpriteLetters[column + i][row].setLetter(word.toUpperCase().subSequence(i, i+1));
+			
+			++row;
+		}
+
+		// randomize empty spaces
 		for (int i = 0; i < COLUMNS; ++i) {
 			for (int j = 0; j < ROWS; ++j) {
-				mSpriteLetters[i][j]
-						.setLetter(ResourceManager.getInstance().mLettersString
-								.subSequence(j * COLUMNS + i, j * COLUMNS + i + 1));
+				if (mSpriteLetters[i][j].getLetter() == " ")
+				{
+					mSpriteLetters[i][j].setLetter(String.valueOf(alphabet.charAt(rgen.nextInt(alphabet.length()))));
+					System.out.println("dodano losowa literke: "+mSpriteLetters[i][j].getLetter());
+				}
 			}
 		}
+		
+//		for (int i = 0; i < COLUMNS; ++i) {
+//			for (int j = 0; j < ROWS; ++j) {
+//				mSpriteLetters[i][j]
+//						.setLetter(ResourceManager.getInstance().mLettersString
+//								.subSequence(j * COLUMNS + i, j * COLUMNS + i + 1));
+//			}
+//		}
 	}
 }

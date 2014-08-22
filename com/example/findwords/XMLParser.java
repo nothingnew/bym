@@ -55,6 +55,8 @@ public class XMLParser extends DefaultHandler {
 			bText = false;
 			if (length <= 11)
 				words.add(new String(ch, start, length));
+			else
+				System.out.println("[XML] za dlugi wyraz : " + new String(ch, start, length)); 
 		}
 	}
 
