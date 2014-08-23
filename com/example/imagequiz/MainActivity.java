@@ -40,8 +40,8 @@ public class MainActivity extends BaseGameActivity {
 	private QuestionData mQuestionData;
 	private boolean locker;
 	
-	public int correctAnswersCount;
-	public int wrongAnswersCount;
+	private int mCorrectAnswersCount;
+	private int mWrongAnswersCount;
 
 	@Override
 	public EngineOptions onCreateEngineOptions() {
@@ -84,6 +84,8 @@ public class MainActivity extends BaseGameActivity {
 		mQuestionData.randomShuffle();
 		ResourceManager.getInstance().loadQuestionTextures(
 				mQuestionData.getQuestionImagesArray(), mEngine, this);
+		mCorrectAnswersCount = 0;
+		mWrongAnswersCount = 0;
 
 		pOnCreateResourcesCallback.onCreateResourcesFinished();
 	}
@@ -108,8 +110,12 @@ public class MainActivity extends BaseGameActivity {
 			public void onAnimationStarted(AnimatedSprite pAnimatedSprite,
 					int pInitialLoopCount) {
 
-				++correctAnswersCount;
+				++mCorrectAnswersCount;
 				ResourceManager.getInstance().mSound[0].play();
+
+				if (mCorrectAnswersCount == mQuestionData.numberOfCorrectAnswers)
+					for (int i = 0; i < 6; ++i)
+						mScene.unregisterTouchArea(buttonSprite[i]);
 			}
 
 			@Override
@@ -129,7 +135,13 @@ public class MainActivity extends BaseGameActivity {
 			@Override
 			public void onAnimationFinished(AnimatedSprite pAnimatedSprite) {
 
-				onAnswersCheck();
+				if (locker) // do not check when question is already finished
+					return;
+
+				if (mCorrectAnswersCount == mQuestionData.numberOfCorrectAnswers) {
+					locker = true;
+					onQuestionComplete();
+				}
 			}
 		};
 		
@@ -139,7 +151,7 @@ public class MainActivity extends BaseGameActivity {
 			public void onAnimationStarted(AnimatedSprite pAnimatedSprite,
 					int pInitialLoopCount) {
 
-				++wrongAnswersCount;
+				++mWrongAnswersCount;
 				for (int i = 0; i < 6; ++i)
 					mScene.unregisterTouchArea(buttonSprite[i]);
 			}
@@ -199,24 +211,6 @@ public class MainActivity extends BaseGameActivity {
 		pOnPopulateSceneCallback.onPopulateSceneFinished();
 	}
 
-	public void onAnswersCheck() {
-
-		if (locker) // do not check when question is already finished
-			return;
-
-		int correctAnswersChecked = 0;
-
-		for (int i = 0; i < 6; ++i) {
-			if (buttonSprite[i].isChecked() && buttonSprite[i].isCorrect())
-				++correctAnswersChecked;
-		}
-
-		if (correctAnswersChecked == mQuestionData.numberOfCorrectAnswers) {
-			locker = true;
-			onQuestionComplete();
-		}
-	}
-
 	public void onQuestionComplete() {
 
 		Sprite completeSprite = new Sprite(WIDTH / 2, HEIGHT / 2 - 200,
@@ -238,9 +232,6 @@ public class MainActivity extends BaseGameActivity {
 
 			@Override
 			public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
-
-				for (int i = 0; i < 6; ++i)
-					mScene.unregisterTouchArea(buttonSprite[i]);
 			}
 
 			@Override
@@ -333,6 +324,8 @@ public class MainActivity extends BaseGameActivity {
 		}
 
 		questionText.setText(mQuestionData.getQuestionText());
+		mCorrectAnswersCount = 0;
+		mWrongAnswersCount = 0;
 
 		return true;
 	}
