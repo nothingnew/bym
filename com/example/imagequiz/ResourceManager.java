@@ -37,23 +37,13 @@ public class ResourceManager {
 	// ResourceManager Singleton instance
 	private static ResourceManager INSTANCE;
 
-	/*
-	 * The variables listed should be kept public, allowing us easy access to
-	 * them when creating new Sprites, Text objects and to play sound files
-	 */
 	public ITextureRegion mGameTextureRegionImage[];
 	public ITextureRegion mGameTextureRegionQuestion;
 	public ITextureRegion mGameTextureRegionComplete;
 	public ITiledTextureRegion mGameTextureRegionBackground;
-
 	public Sound mSound[];
-
 	public Font mFont;
-	public Font mFont2;
-
-	public String mCorrectCompleteString;
-	public String mWrongCompleteString;
-
+	public String mCompleteString;
 	public List<QuestionData> mQuestions;
 
 	ResourceManager() {
@@ -61,18 +51,13 @@ public class ResourceManager {
 	}
 
 	public synchronized static ResourceManager getInstance() {
+
 		if (INSTANCE == null) {
 			INSTANCE = new ResourceManager();
 		}
 		return INSTANCE;
 	}
 
-	/*
-	 * Each scene within a game should have a loadTextures method as well as an
-	 * accompanying unloadTextures method. This way, we can display a loading
-	 * image during scene swapping, unload the first scene's textures then load
-	 * the next scenes textures.
-	 */
 	public synchronized void loadGameTextures(Engine pEngine, Context pContext) {
 
 		BitmapTextureAtlasTextureRegionFactory
@@ -91,7 +76,7 @@ public class ResourceManager {
 				.createTiledFromAsset(mBitmapTextureAtlas2, pContext,
 						"background.png", 3, 1);
 
-		// to load images for answers
+		// to load images for answers later
 		mGameTextureRegionImage = new TextureRegion[6];
 
 		try {
@@ -109,12 +94,9 @@ public class ResourceManager {
 		}
 	}
 
-	/*
-	 * All textures should have a method call for unloading once they're no
-	 * longer needed; ie. a level transition.
-	 */
+
 	public synchronized void unloadGameTextures() {
-		// call unload to remove the corresponding texture atlas from memory
+
 		BuildableBitmapTextureAtlas mBitmapTextureAtlas1 = (BuildableBitmapTextureAtlas) mGameTextureRegionQuestion
 				.getTexture();
 		mBitmapTextureAtlas1.unload();
@@ -125,16 +107,11 @@ public class ResourceManager {
 		System.gc();
 	}
 
-	/*
-	 * As with textures, we can create methods to load sound/music objects for
-	 * different scene's within our games.
-	 */
 	public synchronized void loadSounds(Engine pEngine, Context pContext) {
-		// Set the SoundFactory's base path
+
 		SoundFactory.setAssetBasePath("sfx/imagequiz/");
 		mSound = new Sound[3];
 		try {
-			// Create mSound object via SoundFactory class
 			mSound[0] = SoundFactory.createSoundFromAsset(
 					pEngine.getSoundManager(), pContext, "cell_phone_nr0.mp3");
 			mSound[1] = SoundFactory.createSoundFromAsset(
@@ -146,63 +123,37 @@ public class ResourceManager {
 		}
 	}
 
-	/*
-	 * In some cases, we may only load one set of sounds throughout our entire
-	 * game's life-cycle. If that's the case, we may not need to include an
-	 * unloadSounds() method. Of course, this all depends on how much variance
-	 * we have in terms of sound
-	 */
 	public synchronized void unloadSounds() {
-		// we call the release() method on sounds to remove them from memory
+
 		for (int i = 0; i < 3; ++i) {
 			if (!mSound[i].isReleased())
 				mSound[i].release();
 		}
 	}
 
-	/*
-	 * Lastly, we've got the loadFonts method which, once again, tends to only
-	 * need to be loaded once as Font's are generally used across an entire
-	 * game, from menu to shop to game-play.
-	 */
 	public synchronized void loadFonts(Engine pEngine) {
-		FontFactory.setAssetBasePath("fonts/");
 
-		// Create mFont object via FontFactory class
+		FontFactory.setAssetBasePath("fonts/");
 		mFont = FontFactory.create(pEngine.getFontManager(),
-				pEngine.getTextureManager(), 256, 256,
+				pEngine.getTextureManager(), 300, 300,
 				Typeface.create(Typeface.DEFAULT, Typeface.NORMAL), 48f, true,
 				Color.BLACK_ARGB_PACKED_INT);
-
 		mFont.load();
-
-		mFont2 = FontFactory.create(pEngine.getFontManager(),
-				pEngine.getTextureManager(), 256, 256,
-				Typeface.create(Typeface.DEFAULT, Typeface.NORMAL), 40f, true,
-				Color.BLACK_ARGB_PACKED_INT);
-
-		mFont2.load();
 	}
 
-	/*
-	 * If an unloadFonts() method is necessary, we can provide one
-	 */
 	public synchronized void unloadFonts() {
-		// Similar to textures, we can call unload() to destroy font resources
+
 		mFont.unload();
-		mFont2.unload();
 	}
 
 	public synchronized void loadText() {
 
-		mCorrectCompleteString = "DOBRZE.\nDotknij aby przejœæ dalej.";
-		mWrongCompleteString = "Niestety nie uda³o siê.\nDotknij aby przejœæ dalej.";
+		mCompleteString = "DOBRZE.\nWczytujê nowe pytanie.";
 	}
 
 	public synchronized void loadQuestions(Context pContext) {
 
 		try {
-
 			SAXParserFactory factory = SAXParserFactory.newInstance();
 			SAXParser saxParser = factory.newSAXParser();
 
@@ -236,9 +187,7 @@ public class ResourceManager {
 			return data;
 			
 		while (data.getQuestionText().equalsIgnoreCase(except.getQuestionText()))
-		{
 			data = mQuestions.get(rgen.nextInt(mQuestions.size()));
-		}
 		
 		return data;
 	}

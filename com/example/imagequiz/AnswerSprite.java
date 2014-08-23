@@ -21,9 +21,6 @@ public class AnswerSprite extends AnimatedSprite {
 	private final long correctFrameDuration[] = { 200, 200, 1100 };
 	private final int correctFrameNumers[] = { 1, 0, 1 };
 
-	// animacja ruchu test
-	// private MoveByModifier moveModifier;
-
 	public AnswerSprite(float pX, float pY, ITextureRegion pTextureRegion,
 			IAnimationListener pCorrectAnimationListener,
 			IAnimationListener pWrongAnimationListener,
@@ -42,9 +39,6 @@ public class AnswerSprite extends AnimatedSprite {
 				pTextureRegion, pVertexBufferObject);
 
 		attachChild(imageSprite);
-
-		// testy
-		// moveModifier = new MoveByModifier(1, 100, 100);
 	}
 
 	public boolean Reset() {
@@ -93,7 +87,6 @@ public class AnswerSprite extends AnimatedSprite {
 		case TouchEvent.ACTION_DOWN: {
 			if (correct) {
 				checked = true;
-				ResourceManager.getInstance().mSound[0].play();
 				// private final long correctFrameDuration[] = {300, 300, 1400};
 				// private final int correctFrameNumers[] = {1, 0, 1};
 				animate(correctFrameDuration, correctFrameNumers, false,
@@ -111,8 +104,6 @@ public class AnswerSprite extends AnimatedSprite {
 			return true;
 		}
 
-		// moveModifier.reset();
-		// registerEntityModifier(moveModifier);
 		return true;
 	}
 }

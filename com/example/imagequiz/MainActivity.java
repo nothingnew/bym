@@ -6,17 +6,22 @@ import org.andengine.engine.options.EngineOptions;
 import org.andengine.engine.options.ScreenOrientation;
 import org.andengine.engine.options.WakeLockOptions;
 import org.andengine.engine.options.resolutionpolicy.FillResolutionPolicy;
+import org.andengine.entity.IEntity;
+import org.andengine.entity.modifier.DelayModifier;
+import org.andengine.entity.modifier.MoveByModifier;
+import org.andengine.entity.modifier.ParallelEntityModifier;
+import org.andengine.entity.modifier.ScaleModifier;
+import org.andengine.entity.modifier.SequenceEntityModifier;
+import org.andengine.entity.modifier.IEntityModifier.IEntityModifierListener;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.AnimatedSprite;
 import org.andengine.entity.sprite.AnimatedSprite.IAnimationListener;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.text.Text;
 import org.andengine.entity.util.FPSLogger;
-import org.andengine.input.touch.TouchEvent;
 import org.andengine.ui.activity.BaseGameActivity;
 import org.andengine.util.adt.align.HorizontalAlign;
-
-//import android.os.Looper;
+import org.andengine.util.modifier.IModifier;
 
 public class MainActivity extends BaseGameActivity {
 
@@ -37,8 +42,6 @@ public class MainActivity extends BaseGameActivity {
 	
 	public int correctAnswersCount;
 	public int wrongAnswersCount;
-	
-	//private SurfaceGestureDetector gest;
 
 	@Override
 	public EngineOptions onCreateEngineOptions() {
@@ -104,7 +107,9 @@ public class MainActivity extends BaseGameActivity {
 			@Override
 			public void onAnimationStarted(AnimatedSprite pAnimatedSprite,
 					int pInitialLoopCount) {
+
 				++correctAnswersCount;
+				ResourceManager.getInstance().mSound[0].play();
 			}
 
 			@Override
@@ -123,8 +128,8 @@ public class MainActivity extends BaseGameActivity {
 
 			@Override
 			public void onAnimationFinished(AnimatedSprite pAnimatedSprite) {
-				onAnswersCheck();
 
+				onAnswersCheck();
 			}
 		};
 		
@@ -133,7 +138,10 @@ public class MainActivity extends BaseGameActivity {
 			@Override
 			public void onAnimationStarted(AnimatedSprite pAnimatedSprite,
 					int pInitialLoopCount) {
+
 				++wrongAnswersCount;
+				for (int i = 0; i < 6; ++i)
+					mScene.unregisterTouchArea(buttonSprite[i]);
 			}
 
 			@Override
@@ -152,89 +160,40 @@ public class MainActivity extends BaseGameActivity {
 
 			@Override
 			public void onAnimationFinished(AnimatedSprite pAnimatedSprite) {
-				//onAnswersCheck();
 
+				for (int i = 0; i < 6; ++i)
+					mScene.registerTouchArea(buttonSprite[i]);
 			}
 		};
 		
 		buttonSprite = new AnswerSprite[6];
-
 		for (int i = 0; i < 6; ++i) {
-			buttonSprite[i] = new AnswerSprite(BUTTON_WIDTH / 2 + (i % 3)
-					* BUTTON_WIDTH,
+			buttonSprite[i] = new AnswerSprite(BUTTON_WIDTH / 2 + (i % 3) * BUTTON_WIDTH,
 					BUTTON_HEIGHT / 2 + (i / 3) * BUTTON_HEIGHT,
 					ResourceManager.getInstance().mGameTextureRegionImage[i],
 					pCorrectAnimationListener, pWrongAnimationListener,
 					getVertexBufferObjectManager());
 
 			buttonSprite[i].setCorrect(mQuestionData.getQuestionAnswer(i));
-			
+
 			pScene.attachChild(buttonSprite[i]);
 			pScene.registerTouchArea(buttonSprite[i]);
 		}
 
-		questionSprite = new Sprite(QUESTION_WIDTH / 2, QUESTION_HEIGHT
-				/ 2 + BUTTON_HEIGHT * 2,
+		questionSprite = new Sprite(QUESTION_WIDTH / 2,
+				QUESTION_HEIGHT	/ 2 + BUTTON_HEIGHT * 2,
 				ResourceManager.getInstance().mGameTextureRegionQuestion,
 				getVertexBufferObjectManager());
 
 		questionText = new Text(QUESTION_WIDTH / 2, QUESTION_HEIGHT / 2,
-				ResourceManager.getInstance().mFont, "Przyk³adowe pytanie?",
+				ResourceManager.getInstance().mFont, mQuestionData.getQuestionText(),
 				100, getVertexBufferObjectManager());
 		questionText.setHorizontalAlign(HorizontalAlign.CENTER);
-		questionText.setText(mQuestionData.getQuestionText());
 
 		questionSprite.attachChild(questionText);
 
 		pScene.attachChild(questionSprite);
 		
-		/////
-//		Looper.prepare();
-//		gest = new SurfaceGestureDetector(null){
-//
-//			@Override
-//			protected boolean onSingleTap() {
-//				// TODO Auto-generated method stub
-//				return false;
-//			}
-//
-//			@Override
-//			protected boolean onDoubleTap() {
-//				// TODO Auto-generated method stub
-//				return false;
-//			}
-//
-//			@Override
-//			protected boolean onSwipeUp() {
-//				// TODO Auto-generated method stub
-//				return false;
-//			}
-//
-//			@Override
-//			protected boolean onSwipeDown() {
-//				// TODO Auto-generated method stub
-//				return false;
-//			}
-//
-//			@Override
-//			protected boolean onSwipeLeft() {
-//				ResourceManager.getInstance().mSound[1].play();
-//				++correctAnswersCount;
-//				onQuestionComplete(true);
-//				return true;
-//			}
-//
-//			@Override
-//			protected boolean onSwipeRight() {
-//				ResourceManager.getInstance().mSound[0].play();
-//				++wrongAnswersCount;
-//				onQuestionComplete(false);
-//				return true;
-//			}
-//			
-//		};
-		//////
-
 		pScene.setTouchAreaBindingOnActionDownEnabled(true);
 
 		pOnPopulateSceneCallback.onPopulateSceneFinished();
@@ -246,109 +205,113 @@ public class MainActivity extends BaseGameActivity {
 			return;
 
 		int correctAnswersChecked = 0;
-		// int wrongAnswersChecked = 0;
 
 		for (int i = 0; i < 6; ++i) {
-			if (buttonSprite[i].isChecked() == false)
-				continue;
-
-			if (buttonSprite[i].isCorrect())
+			if (buttonSprite[i].isChecked() && buttonSprite[i].isCorrect())
 				++correctAnswersChecked;
-			// else
-			// ++wrongAnswersChecked;
 		}
 
 		if (correctAnswersChecked == mQuestionData.numberOfCorrectAnswers) {
 			locker = true;
-			onQuestionComplete(true);
+			onQuestionComplete();
 		}
-		// else if (wrongAnswersChecked == 6 -
-		// mQuestionData.numberOfCorrectAnswers)
-		// onQuestionComplete(false);
 	}
 
-	public void onQuestionComplete(boolean correct) {
+	public void onQuestionComplete() {
 
-		Sprite completeSprite = new Sprite(WIDTH / 2, HEIGHT / 2,
+		Sprite completeSprite = new Sprite(WIDTH / 2, HEIGHT / 2 - 200,
 				ResourceManager.getInstance().mGameTextureRegionComplete,
-				getVertexBufferObjectManager()) {
+				getVertexBufferObjectManager());
+
+		completeSprite.setScale(0.0f);
+
+		Text completeText = new Text(completeSprite.getWidth() / 2, completeSprite.getHeight() / 2,
+				ResourceManager.getInstance().mFont, ResourceManager.getInstance().mCompleteString,
+				100, getVertexBufferObjectManager());
+
+		completeText.setHorizontalAlign(HorizontalAlign.CENTER);
+
+		completeSprite.attachChild(completeText);
+
+		// Animation listeners
+		IEntityModifierListener enterModifierListener = new IEntityModifierListener() {
+
 			@Override
-			public boolean onAreaTouched(final TouchEvent pSceneTouchEvent,
-					final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
+			public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
 
-				int eventAction = pSceneTouchEvent.getAction();
+				for (int i = 0; i < 6; ++i)
+					mScene.unregisterTouchArea(buttonSprite[i]);
+			}
 
-				switch (eventAction) {
-				case TouchEvent.ACTION_DOWN: {
-					mScene.unregisterTouchArea(this);
-					ResourceManager.getInstance().mSound[1].play();
-					mScene.detachChild(this);
-					showNewQuestion();
-					for (int i = 0; i < mScene.getChildCount(); ++i) {
-						mScene.getChildByIndex(i).setVisible(true);
-					}
-					for (int i = 0; i < 6; ++i) {
-						mScene.registerTouchArea(buttonSprite[i]);
-					}
-					break;
-				}
-				default:
-					break;
+			@Override
+			public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+
+				for (int i = 0; i < mScene.getChildCount(); ++i) {
+					if (mScene.getChildByIndex(i) == pItem)
+						continue;
+
+					mScene.getChildByIndex(i).setVisible(false);
 				}
 
-				locker = false;
-				return true;
+				loadNewQuestion();
 			}
 		};
 
-		String text;
-		if (correct)
-			text = ResourceManager.getInstance().mCorrectCompleteString;
-		else // unused
-			text = ResourceManager.getInstance().mWrongCompleteString;
-		
-		// stats
-		text += "\ndobrze: ";
-		text += String.valueOf(correctAnswersCount);
-		text += "    Ÿle: ";
-		text += String.valueOf(wrongAnswersCount);
+		IEntityModifierListener exitModifierListener = new IEntityModifierListener() {
 
-		Text completeText = new Text(completeSprite.getWidth() / 2,
-				completeSprite.getHeight() / 2,
-				ResourceManager.getInstance().mFont2, text,
-				100, getVertexBufferObjectManager());
-		completeText.setHorizontalAlign(HorizontalAlign.CENTER);
+			@Override
+			public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
 
-		for (int i = 0; i < mScene.getChildCount(); ++i) {
-			mScene.getChildByIndex(i).setVisible(false);
-		}
+				ResourceManager.getInstance().mSound[2].play();
+				showNewQuestion();
+				for (int i = 0; i < mScene.getChildCount(); ++i)
+					mScene.getChildByIndex(i).setVisible(true);
+			}
 
-		completeSprite.attachChild(completeText);
+			@Override
+			public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {	
+
+				for (int i = 0; i < 6; ++i)
+					mScene.registerTouchArea(buttonSprite[i]);
+
+				locker = false;
+				pItem.detachChildren();
+				pItem.detachSelf();
+			}
+		};
+
+		// Moving
+		MoveByModifier moveModifier[] = new MoveByModifier[2];
+		moveModifier[0] = new MoveByModifier(1.5f, 0f, 200f);
+		moveModifier[1] = new MoveByModifier(1.0f, 0f, 100f);
+
+		// Scaling
+		ScaleModifier scaleModifier[] = new ScaleModifier[2];
+		scaleModifier[0] = new ScaleModifier(1.5f, 0.0f, 1.0f);
+		scaleModifier[1] = new ScaleModifier(1.0f, 1.0f, 0.0f);
+
+		// Delay
+		DelayModifier delayModifier = new DelayModifier(1.5f);
+
+		// Connecting moving and scaling together
+		ParallelEntityModifier parallelEntityModifier[] = new ParallelEntityModifier[2];
+		parallelEntityModifier[0] = new ParallelEntityModifier(moveModifier[0], scaleModifier[0]);
+		parallelEntityModifier[1] = new ParallelEntityModifier(moveModifier[1], scaleModifier[1]);
+		parallelEntityModifier[0].addModifierListener(enterModifierListener);
+		parallelEntityModifier[1].addModifierListener(exitModifierListener);
+
+		// Final animation modifier
+		SequenceEntityModifier sequenceEntityModifier =
+				new SequenceEntityModifier(parallelEntityModifier[0], delayModifier, parallelEntityModifier[1]);
+
+		// Show screen on scene
 		mScene.attachChild(completeSprite);
-		mScene.registerTouchArea(completeSprite);
-		for (int i = 0; i < 6; ++i) {
-			mScene.unregisterTouchArea(buttonSprite[i]);
-		}
 
-		loadNewQuestion();
+		// Apply animation
+		completeSprite.registerEntityModifier(sequenceEntityModifier);
 	}
 
 	public boolean loadNewQuestion() {
-
-		// osobny watek zeby nie freezowac apki? zbaezpieczyc!
-//		final Context pContext = this;
-//		Thread th = new Thread() {
-//			@Override
-//			public void run() {
-//				mQuestionData = ResourceManager.getInstance().getNextQuestion();
-//				mQuestionData.randomShuffle();
-//				ResourceManager.getInstance().unloadQuestionTextures();
-//				ResourceManager.getInstance().loadQuestionTextures(
-//						mQuestionData.getQuestionImagesArray(), mEngine,
-//						pContext);
-//			}
-//		};
-//		th.run();
 
 		 mQuestionData = ResourceManager.getInstance().getNextQuestion(mQuestionData);
 		 mQuestionData.randomShuffle();
@@ -368,13 +331,9 @@ public class MainActivity extends BaseGameActivity {
 			buttonSprite[i].setCorrect(mQuestionData.getQuestionAnswer(i));
 			buttonSprite[i].Reset();
 		}
+
 		questionText.setText(mQuestionData.getQuestionText());
 
 		return true;
 	}
-
-//	@Override
-//	public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
-//		return gest.onManagedTouchEvent(pSceneTouchEvent);
-//	}
 }
