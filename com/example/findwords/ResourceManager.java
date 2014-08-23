@@ -39,7 +39,8 @@ public class ResourceManager {
 	public ITextureRegion mGameTextureRegionComplete;
 	public Sound mSound;
 	public Font mFont;
-	public List<List<String>> mGrids;
+	
+	private List<List<String>> mGrids;
 
 	ResourceManager() {
 		// The constructor is of no use to us
@@ -55,6 +56,7 @@ public class ResourceManager {
 	public synchronized void loadSounds(Engine pEngine, Context pContext) {
 		
 		SoundFactory.setAssetBasePath("sfx/findwords/");
+
 		try {
 			mSound = SoundFactory.createSoundFromAsset(
 					pEngine.getSoundManager(), pContext, "cell_phone_nr0.mp3");
@@ -88,7 +90,6 @@ public class ResourceManager {
 	public synchronized void loadWords(Context pContext) {
 		
 		try {
-
 			SAXParserFactory factory = SAXParserFactory.newInstance();
 			SAXParser saxParser = factory.newSAXParser();
 
@@ -105,32 +106,20 @@ public class ResourceManager {
 
 			// result
 			mGrids = handler.getResults();
-
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
-		// DEBUG
-		Log.v("mGrids", "mGrids size = " + String.valueOf(mGrids.size()));
-		for (List<String> mCurrentWordsList : mGrids)
-		{
-			Log.v("mGrids mCurrentWordsList", "mCurrentWordsList size = " + String.valueOf(mCurrentWordsList.size()));
-			for (int i = 0; i < mCurrentWordsList.size(); ++i)
-				Log.v("mGrids mCurrentWordsList", mCurrentWordsList.get(i));
-		}
-		//////////////////
 	}
 
 	public synchronized void loadGameTextures(Engine pEngine, Context pContext) {
 
 		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/findwords/");
 
-		
 		BuildableBitmapTextureAtlas mBitmapTextureAtlas1 = new BuildableBitmapTextureAtlas(
 				pEngine.getTextureManager(), 300, 100);
 		BuildableBitmapTextureAtlas mBitmapTextureAtlas2 = new BuildableBitmapTextureAtlas(
 				pEngine.getTextureManager(), 800, 300);
-		
+
 		mGameTextureRegionBackground = BitmapTextureAtlasTextureRegionFactory
 				.createTiledFromAsset(mBitmapTextureAtlas1, pContext,
 						"background.png", 3, 1);
@@ -164,7 +153,7 @@ public class ResourceManager {
 	}
 	
 	public synchronized List<String> getNewWords() {
-		
+
 		Random rgen = new Random();
 		return mGrids.get(rgen.nextInt(mGrids.size()));
 	}

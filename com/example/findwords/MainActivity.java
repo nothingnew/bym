@@ -78,7 +78,6 @@ public class MainActivity extends BaseGameActivity implements
 
 		// Load words
 		ResourceManager.getInstance().loadWords(this);
-		// mCurrentWordsList = ResourceManager.getInstance().getNewWords();
 
 		// Load sounds
 		ResourceManager.getInstance().loadSounds(mEngine, this);
@@ -111,7 +110,7 @@ public class MainActivity extends BaseGameActivity implements
 
 		mSpriteLetters = new LetterButtonSprite[COLUMNS][ROWS];
 
-		for (int i = 0; i < COLUMNS; ++i) {
+		for (int i = 0; i < COLUMNS; ++i)
 			for (int j = 0; j < ROWS; ++j) {
 
 				mSpriteLetters[i][j] = new LetterButtonSprite(
@@ -123,40 +122,41 @@ public class MainActivity extends BaseGameActivity implements
 
 				pScene.attachChild(mSpriteLetters[i][j]);
 			}
-		}
 
 		loadNewGrid();
 
 		pScene.setOnSceneTouchListener(this);
-
 		pOnPopulateSceneCallback.onPopulateSceneFinished();
 	}
 
 	@Override
 	public boolean onSceneTouchEvent(Scene pScene,
 			final TouchEvent pSceneTouchEvent) {
-		// zmienic wszystko na switch!
 
 		if (mCurrentWordsList.isEmpty())
 			return true;
 
-		if (pSceneTouchEvent.isActionMove() && mIgnoreMove) {
-			System.out.println("move locked");
-			return true;
-		}
+		int eventAction = pSceneTouchEvent.getAction();
 
-		if (mIgnoreMove && pSceneTouchEvent.isActionDown()) {
-			System.out.println("move unlocked");
-			mIgnoreMove = false;
-		}
+		switch (eventAction) {
+		case TouchEvent.ACTION_DOWN:
+			if (mIgnoreMove)
+				mIgnoreMove = false;
+			// no break here!
+		case TouchEvent.ACTION_MOVE: {
+			if (mIgnoreMove)
+				break;
 
-		if (pSceneTouchEvent.isActionMove() || pSceneTouchEvent.isActionDown()) {
 			int i = (int) pSceneTouchEvent.getX() / BUTTON_WIDTH;
 			int j = (int) pSceneTouchEvent.getY() / BUTTON_HEIGHT;
 
-			if (mSpriteLetters[i][j].getCurrentTileIndex() != 1) {
+			if (mSpriteLetters[i][j].getCurrentTileIndex() != 1)
 				onLetterButtonClick(i, j);
+			
+			break;
 			}
+		default:
+			return true;
 		}
 
 		return true;
@@ -169,9 +169,7 @@ public class MainActivity extends BaseGameActivity implements
 			mCurrentSpriteList.add(mSpriteLetters[i][j]);
 			updateAvailableSprites();
 			mCurrentText += mSpriteLetters[i][j].getLetter();
-			System.out
-					.println("mCurrentspriteList is empty, first element added. "
-							+ mCurrentText);
+
 			return;
 		}
 
@@ -194,16 +192,11 @@ public class MainActivity extends BaseGameActivity implements
 		for (LetterButtonSprite sprite : mCurrentSpriteList)
 			mCurrentText += sprite.getLetter();
 
-		System.out.println("new mCurrentText value: " + mCurrentText);
-
 		if (!checkCorrectness())
 			mSpriteLetters[i][j].setCurrentTileIndex(1);
 	}
 
 	public boolean checkCorrectness() {
-
-		System.out.println("checkCorrectness list size: "
-				+ String.valueOf(mCurrentWordsList.size()));
 
 		for (String word : mCurrentWordsList)
 			if (word.equalsIgnoreCase(mCurrentText)) {
@@ -219,10 +212,8 @@ public class MainActivity extends BaseGameActivity implements
 				mCurrentWordsList.remove(word);
 
 				if (mCurrentWordsList.isEmpty())
-				{
 					onTaskComplete();
-					System.out.println("grid finished");
-				}
+				
 				return true;
 			}
 
@@ -242,22 +233,19 @@ public class MainActivity extends BaseGameActivity implements
 		int firstColumn = (int) first.getX() / BUTTON_WIDTH;
 		int firstRow = (int) first.getY() / BUTTON_HEIGHT;
 
-		System.out.println("first element: " + String.valueOf(firstColumn)
-				+ " " + String.valueOf(firstRow));
-
 		// if there is only one sprite we can go in both directions
 		if (mCurrentSpriteList.size() == 1) {
 
-			if (firstColumn != 0) // not in first row
+			if (firstColumn != 0)
 				mAvailableSpriteList
 						.add(mSpriteLetters[firstColumn - 1][firstRow]);
-			if (firstColumn != COLUMNS - 1) // not in last row
+			if (firstColumn != COLUMNS - 1)
 				mAvailableSpriteList
 						.add(mSpriteLetters[firstColumn + 1][firstRow]);
-			if (firstRow != 0) // not in first column
+			if (firstRow != 0)
 				mAvailableSpriteList
 						.add(mSpriteLetters[firstColumn][firstRow - 1]);
-			if (firstRow != ROWS - 1) // not in last column
+			if (firstRow != ROWS - 1)
 				mAvailableSpriteList
 						.add(mSpriteLetters[firstColumn][firstRow + 1]);
 
@@ -267,26 +255,24 @@ public class MainActivity extends BaseGameActivity implements
 		LetterButtonSprite last = mCurrentSpriteList.get(mCurrentSpriteList.size() - 1);
 		int lastColumn = (int) last.getX() / BUTTON_WIDTH;
 		int lastRow = (int) last.getY() / BUTTON_HEIGHT;
-		System.out.println("last element: " + String.valueOf(lastColumn) + " "
-				+ String.valueOf(lastRow));
 
 		// if there are more sprites we can go only in one direction
 		if (firstColumn == lastColumn) {
-			if (lastRow != 0) // not in first column
+			if (lastRow != 0)
 				mAvailableSpriteList
 						.add(mSpriteLetters[firstColumn][lastRow - 1]);
-			if (firstRow != ROWS - 1) // not in last column
+			if (firstRow != ROWS - 1)
 				mAvailableSpriteList
 						.add(mSpriteLetters[firstColumn][firstRow + 1]);
 		} else if (firstRow == lastRow) {
-			if (firstColumn != 0) // not in first row
+			if (firstColumn != 0)
 				mAvailableSpriteList
 						.add(mSpriteLetters[firstColumn - 1][firstRow]);
-			if (lastColumn != COLUMNS - 1) // not in last row
+			if (lastColumn != COLUMNS - 1)
 				mAvailableSpriteList
 						.add(mSpriteLetters[lastColumn + 1][firstRow]);
 		} else
-			System.out.println("updateAvailableSprites: WTF? to nie powinno miec miejsca!");
+			Log.w("Grid", "updateAvailableSprites: two letters not in the same line!");
 
 		return;
 	}
@@ -296,36 +282,25 @@ public class MainActivity extends BaseGameActivity implements
 		// must be local copy due to remove operations
 		mCurrentWordsList = new ArrayList<String>();
 		mCurrentWordsList.addAll(ResourceManager.getInstance().getNewWords());
-		// DEBUG
-		Log.v("wordlist", "wordlist size = " + String.valueOf(mCurrentWordsList.size()));
-		for (int i = 0; i < mCurrentWordsList.size(); ++i)
-			Log.v("wordlist", mCurrentWordsList.get(i));
-		///////////////////
+
 		//int counter;
 		int column, row;
 		Random rgen = new Random();
-		
+
 		// clear old grid
 		for (int i = 0; i < COLUMNS; ++i)
-			for (int j = 0; j < ROWS; ++j)
-			{
+			for (int j = 0; j < ROWS; ++j) {
 				mSpriteLetters[i][j].setLetter(" ");
 				mSpriteLetters[i][j].Reset();
 			}
-		
+
 		row = 0;
 		Collections.shuffle(mCurrentWordsList);
-		// DEBUG
-		Log.v("wordlist", "wordlist after shuffle");
-		for (int i = 0; i < mCurrentWordsList.size(); ++i)
-			Log.v("wordlist", mCurrentWordsList.get(i));
-		//////////////////
+
 		for (String word : mCurrentWordsList) {
-			System.out.println("przetwarzane slowo: " + word);
-			
 			if (row == ROWS) // too much words :)
 			{
-				System.out.println("za duzo slow (>8), ucinam");
+				Log.v("Grid", "loadNewGrid: too much words to put into grid (8+), truncate.");
 				mCurrentWordsList = mCurrentWordsList.subList(0, ROWS);
 				break;
 			}
@@ -342,16 +317,11 @@ public class MainActivity extends BaseGameActivity implements
 			++row;
 		}
 
-		// randomize empty spaces
-		for (int i = 0; i < COLUMNS; ++i) {
-			for (int j = 0; j < ROWS; ++j) {
+		// fill empty spaces with random letters from alphabet
+		for (int i = 0; i < COLUMNS; ++i)
+			for (int j = 0; j < ROWS; ++j)
 				if (mSpriteLetters[i][j].getLetter() == " ")
-				{
 					mSpriteLetters[i][j].setLetter(String.valueOf(alphabet.charAt(rgen.nextInt(alphabet.length()))));
-					System.out.println("dodano losowa literke: " + mSpriteLetters[i][j].getLetter());
-				}
-			}
-		}
 	}
 
 	public void onTaskComplete() {
@@ -366,6 +336,7 @@ public class MainActivity extends BaseGameActivity implements
 				ResourceManager.getInstance().mFont, text,
 				100, getVertexBufferObjectManager());
 		completeText.setHorizontalAlign(HorizontalAlign.CENTER);
+
 		completeSprite.attachChild(completeText);
 
 		// Animation control
@@ -373,11 +344,13 @@ public class MainActivity extends BaseGameActivity implements
 
 			@Override
 			public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+
 				ResourceManager.getInstance().mSound.play();
 			}
 
 			@Override
 			public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+
 //				pModifier.reset();
 //				pItem.clearEntityModifiers();
 //				pItem.unregisterEntityModifier((IEntityModifier) pModifier);
@@ -388,14 +361,13 @@ public class MainActivity extends BaseGameActivity implements
 
 			@Override
 			public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+
 				loadNewGrid();
 			}
 
 			@Override
 			public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
-//				pModifier.reset();
-//				pItem.clearEntityModifiers();
-//				pItem.unregisterEntityModifier((IEntityModifier) pModifier);
+
 				pItem.detachChildren();
 				pItem.detachSelf();
 			}
@@ -425,6 +397,7 @@ public class MainActivity extends BaseGameActivity implements
 		SequenceEntityModifier sequenceEntityModifier = 
 				new SequenceEntityModifier(parallelEntityModifier[0], delayModifier, parallelEntityModifier[1]);
 
+		// Show screen on scene
 		mScene.attachChild(completeSprite);
 
 		// Apply animation

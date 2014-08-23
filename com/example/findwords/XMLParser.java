@@ -7,11 +7,13 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import android.util.Log;
+
 public class XMLParser extends DefaultHandler {
 
 	public XMLParser() {
 		super();
-		
+
 		grids = new ArrayList<List<String>>();
 	}
 
@@ -22,8 +24,6 @@ public class XMLParser extends DefaultHandler {
 
 	public void startElement(String uri, String localName, String qName,
 			Attributes attributes) throws SAXException {
-
-		//System.out.println("Start Element :" + qName);
 
 		if (qName.equalsIgnoreCase("GRID")) {
 			words = new ArrayList<String>();
@@ -37,8 +37,6 @@ public class XMLParser extends DefaultHandler {
 	public void endElement(String uri, String localName, String qName)
 			throws SAXException {
 
-		//System.out.println("End Element :" + qName);
-
 		if (qName.equalsIgnoreCase("GRID")) {
 			if (!words.isEmpty())
 				grids.add(words);
@@ -48,20 +46,16 @@ public class XMLParser extends DefaultHandler {
 	public void characters(char ch[], int start, int length)
 			throws SAXException {
 
-		//System.out.println(new String(ch, start, length));
-
 		if (bText) {
-//			System.out.println("Word : " + new String(ch, start, length));
 			bText = false;
 			if (length <= 11)
 				words.add(new String(ch, start, length));
 			else
-				System.out.println("[XML] za dlugi wyraz : " + new String(ch, start, length)); 
+				Log.w("XML Parser", "word length > 11 : " + new String(ch, start, length));
 		}
 	}
 
 	public List<List<String>> getResults() {
 		return grids;
 	}
-
 }
